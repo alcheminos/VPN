@@ -53,7 +53,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function handleNewAccount(data) {
     const { systems, ip, usagePeriod, user } = data;
-    const userEmail = `${user.jiraId}@sk.com`; // 👈 이메일은 Jira ID 기준
+    const userEmail = `${user.jiraId}@sk.com`;
     
     const descriptionText = `B tv 큐레이션/편성 업무 목적 신규 VPN 계정 발급 및 관련 어드민 접속 허용을 요청드립니다.
 ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
@@ -65,8 +65,7 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
             description: descriptionText,
             issuetype: { name: "Task" }, 
             reporter: { name: user.jiraId },
-            assignee: { name: "hs3986" } // 👈 담당자 강제 지정 추가
-            
+            assignee: { name: "hs3986" } 
         }
     };
     
@@ -98,6 +97,40 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
     });
 
     const worksheet = XLSX.utils.aoa_to_sheet(excelAoA);
+
+    // 엑셀 열(Column) 너비 넉넉하게 지정
+    worksheet['!cols'] = [
+        {wch: 15}, {wch: 15}, {wch: 18}, {wch: 20}, {wch: 18}, {wch: 15}, {wch: 12}, {wch: 15}
+    ];
+
+    // 엑셀 셀 병합(Merge) 로직 추가 
+    worksheet['!merges'] = [
+        { s: {r:0, c:0}, e: {r:0, c:7} }, // VPN(SSL VPN) 작업요청서
+        { s: {r:1, c:0}, e: {r:1, c:7} }, // 요청일시 및 담당자
+        { s: {r:2, c:0}, e: {r:2, c:1} }, { s: {r:2, c:2}, e: {r:2, c:7} }, // 제목
+        { s: {r:3, c:0}, e: {r:3, c:1} }, { s: {r:3, c:2}, e: {r:3, c:3} }, { s: {r:3, c:4}, e: {r:3, c:5} }, { s: {r:3, c:6}, e: {r:3, c:7} }, // 작업 신청일
+        { s: {r:4, c:0}, e: {r:7, c:0} }, // 작업 요청자(세로 병합)
+        { s: {r:4, c:4}, e: {r:7, c:4} }, // 실 사용자명(세로 병합)
+        { s: {r:4, c:2}, e: {r:4, c:3} }, { s: {r:4, c:6}, e: {r:4, c:7} }, // 부서, 업체명
+        { s: {r:5, c:2}, e: {r:5, c:3} }, { s: {r:5, c:6}, e: {r:5, c:7} }, // 담당자, 이름
+        { s: {r:6, c:2}, e: {r:6, c:3} }, { s: {r:6, c:6}, e: {r:6, c:7} }, // 연락처
+        { s: {r:8, c:0}, e: {r:8, c:7} }, // VPN 작업 요청사항
+        { s: {r:9, c:0}, e: {r:9, c:7} }, // 1. 계정 정보
+        { s: {r:10, c:0}, e: {r:10, c:1} }, { s: {r:10, c:2}, e: {r:10, c:4} }, { s: {r:10, c:5}, e: {r:10, c:6} }, // 계정 정보 헤더
+        { s: {r:11, c:0}, e: {r:11, c:1} }, { s: {r:11, c:2}, e: {r:11, c:4} }, { s: {r:11, c:5}, e: {r:11, c:6} }, // 계정 정보 내용
+        { s: {r:12, c:0}, e: {r:12, c:7} }, // 2. 접속지 추가
+        { s: {r:13, c:0}, e: {r:14, c:1} }, // Source IP 위치
+        { s: {r:13, c:2}, e: {r:14, c:2} }, { s: {r:13, c:3}, e: {r:14, c:3} }, { s: {r:13, c:4}, e: {r:14, c:4} }, // IP, Port
+        { s: {r:13, c:5}, e: {r:14, c:5} }, { s: {r:13, c:6}, e: {r:14, c:6} }, { s: {r:13, c:7}, e: {r:14, c:7} }  // 포트용도 등
+    ];
+
+    // 시스템 갯수만큼 동적으로 생성되는 접속지 row 셀 병합
+    let currentRow = 15;
+    systems.forEach(() => {
+        worksheet['!merges'].push({ s: {r:currentRow, c:0}, e: {r:currentRow, c:1} });
+        currentRow++;
+    });
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "신청서");
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
@@ -107,7 +140,9 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
     formData.append("file", excelBlob, `SSLVPN_신청서_${user.name}.xlsx`);
     
     await fetchJira(`/rest/api/2/issue/${issueKey}/attachments`, 'POST', formData, true);
-    await fetchJira(`/rest/api/2/issue/${issueKey}/transitions`, 'POST', { transition: { id: TRANSITION_ID_START_WORK } });
+    
+    // 👇 에러가 났던 변수명을 TRANSITION_ID_RECEIPT로 수정 완료
+    await fetchJira(`/rest/api/2/issue/${issueKey}/transitions`, 'POST', { transition: { id: TRANSITION_ID_RECEIPT } });
 
     return { success: true, issueKey: issueKey };
 }
