@@ -116,13 +116,15 @@ async function handleExtendVpn(data) {
     const { date, ip, reason, startTime, endTime, user } = data;
     const [yyyy, mm, dd] = date.split('-'); 
     
+    // {panel} 매크로를 앞뒤로 씌워 Jira가 내부의 표를 강제로 그리게 만듭니다.
     const tableDescription = [
         "반드시 아래 양식에 맞게 입력 부탁드립니다.",
         "아래 양식 이외 신청 건은 반려처리됩니다.",
         "",
-        "|구분|SKB 담당자|사용자 소속|사용자 이름|VPN 계정|신청일자(년)|신청일자(월)|신청일자(일)|사용시간(시작)|사용시간(종료)|접속사유|",
-        "|---|---|---|---|---|---|---|---|---|---|---|",
-        `|1|${user.name}|${user.dept}|${user.name}|${user.id}|${yyyy}|${mm}|${dd}|${startTime}|${endTime}|${reason}|`
+        "{panel}",
+        "||구분||SKB 담당자||사용자 소속||사용자 이름||VPN 계정||신청일자(년)||신청일자(월)||신청일자(일)||사용시간(시작)||사용시간(종료)||접속사유||",
+        `|1|${user.name}|${user.dept}|${user.name}|${user.id}|${yyyy}|${mm}|${dd}|${startTime}|${endTime}|${reason}|`,
+        "{panel}"
     ].join('\n');
 
     const payload = {
