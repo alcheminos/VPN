@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=450, initial-scale=1.0">
+    <title>VPN Admin Extension</title>
+    <link rel="stylesheet" href="flatpickr.min.css">
+    <script src="flatpickr.js"></script>
+    <script src="ko.js"></script>
+    <style>
+        :root { --primary: #0052CC; --success: #36B37E; --warning: #FF5630; --bg: #F4F5F7; --border: #DFE1E6; --text-main: #172B4D; --text-sub: #5E6C84; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; width: 450px; min-height: 500px; }
+        header { background-color: var(--primary); color: white; padding: 15px 20px; font-weight: 600; display: flex; justify-content: space-between; }
+        .settings-btn { background: none; border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 4px; padding: 4px 10px; cursor: pointer; }
+        .container { padding: 20px; }
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 5px; }
+        .input-group input, .input-group select { width: 100%; padding: 8px; border: 2px solid var(--border); border-radius: 4px; box-sizing: border-box; }
+        .flex-row { display: flex; gap: 10px; align-items: center; } .flex-1 { flex: 1; }
+        button.btn { background-color: var(--primary); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; margin-top:10px;}
+        button.btn:disabled { opacity: 0.6; }
+        button.btn-success { background-color: var(--success); }
+        button.btn-outline { background-color: transparent; color: var(--primary); border: 1px solid var(--primary); width: auto; padding: 4px 8px; margin-top: 0; font-size: 11px;}
+        .profile-card { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 20px; }
+        .tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
+        .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 600; color: var(--text-sub); cursor: pointer; }
+        .tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+        .tab-content { display: none; } .tab-content.active { display: block; } .hidden { display: none !important; }
+        .status-log { margin-top: 15px; padding: 10px; background: #232a31; color: #a4b1c2; border-radius: 4px; font-size: 11px; max-height: 120px; overflow-y: auto; }
+        .checkbox-group { display: flex; flex-direction: column; gap: 8px; background: #fafbfc; padding: 10px; border: 1px solid var(--border); border-radius: 4px; }
+        .checkbox-group label { font-size: 13px; display: flex; align-items: center; cursor: pointer; margin:0; justify-content: flex-start;}
+        .checkbox-group input { width: auto; margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div>VPN Admin</div>
+        <button class="settings-btn" id="btnOpenSettings">⚙️ 설정</button>
+    </header>
+
+    <div class="container">
+        <div id="settingsView">
+            <div class="flex-row">
+                <div class="input-group flex-1"><label>이름</label><input type="text" id="setName" value="심효섭"></div>
+                <div class="input-group flex-1"><label>사번 (VPN계정)</label><input type="text" id="setId" value="skb3986"></div>
+            </div>
+            <div class="flex-row">
+                <div class="input-group flex-1"><label>Jira ID (메일 ID)</label><input type="text" id="setJiraId" value="hs3986"></div>
+                <div class="input-group flex-1"><label>소속 (팀명)</label><input type="text" id="setDept" value="Btv큐레이션팀"></div>
+            </div>
+            
+            <div class="input-group">
+                <label>
+                    <span>재택 1 IP (필수)</span>
+                    <button type="button" class="btn btn-outline" id="btnLoadIp1">현재 위치 IP 입력</button>
+                </label>
+                <input type="text" id="setIp1" placeholder="버튼을 누르면 현재 접속된 공인 IP가 입력됩니다.">
+            </div>
+            
+            <div class="input-group">
+                <label>
+                    <span>재택 2 IP (선택)</span>
+                    <button type="button" class="btn btn-outline" id="btnLoadIp2">현재 위치 IP 입력</button>
+                </label>
+                <input type="text" id="setIp2">
+            </div>
+            <button class="btn" id="btnSaveSettings">저장하고 시작하기</button>
+        </div>
+
+        <div id="mainWorkspaceView" class="hidden">
+            <div class="profile-card">
+                <div style="font-weight: 600;" id="dispName"></div>
+                <div style="font-size: 12px; color: var(--text-sub);" id="dispDept"></div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" id="tabBtnExtend">VPN 연장</div>
+                <div class="tab" id="tabBtnNewAccount">신규 신청</div>
+            </div>
+
+            <div id="tabExtend" class="tab-content active">
+                <div class="input-group">
+                    <label>신청 날짜 (다중 선택)</label>
+                    <input type="text" id="datePicker" placeholder="날짜 선택">
+                </div>
+                <div class="input-group"><label>접속할 IP</label><select id="extendVpnIp" class="ip-selector"></select></div>
+                <div class="input-group">
+                    <label>사용 시간 (시작 ~ 종료)</label>
+                    <div class="flex-row" style="justify-content: flex-start;">
+                        <input type="text" id="usageStartTime" value="09" style="width: 60px; text-align: center;"> 시 ~ 
+                        <input type="text" id="usageEndTime" value="18" style="width: 60px; text-align: center;"> 시
+                    </div>
+                </div>
+                <div class="input-group"><label>접속 사유</label><input type="text" id="reason" value="ACS / EUXP / RACE 접속"></div>
+                <button id="btnExtend" class="btn">선택 날짜 일괄 신청</button>
+                <div id="statusLog" class="status-log hidden"></div>
+            </div>
+
+            <div id="tabNewAccount" class="tab-content">
+                <div class="input-group">
+                    <label>대상 시스템 (포트)</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="targetSystem" value="EUXP"> EUXP (TCP 8080, 8443)</label>
+                        <label><input type="checkbox" name="targetSystem" value="통합ES"> 통합ES (5601)</label>
+                        <label><input type="checkbox" name="targetSystem" value="ACS"> ACS (80)</label>
+                        <label><input type="checkbox" name="targetSystem" value="ECDN"> ECDN (80)</label>
+                        <label><input type="checkbox" name="targetSystem" value="상용DB"> 상용DB (9090)</label>
+                    </div>
+                </div>
+                <div class="input-group"><label>사용할 IP</label><select id="newAccountIp" class="ip-selector"></select></div>
+                <div class="input-group">
+                    <label>사용 기간 (PJT기간)</label>
+                    <input type="text" id="usagePeriod" value="1년">
+                </div>
+                <button id="btnNewAccount" class="btn btn-success">Jira 자동 생성 (엑셀 첨부)</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

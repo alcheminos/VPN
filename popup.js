@@ -1,0 +1,182 @@
+let userData = {};
+
+document.addEventListener("DOMContentLoaded", () => {
+    try {
+        document.getElementById('btnOpenSettings').addEventListener('click', openSettings);
+        document.getElementById('btnSaveSettings').addEventListener('click', saveSettings);
+        
+        document.getElementById('btnLoadIp1').addEventListener('click', () => loadCurrentIpToInput('setIp1', 'btnLoadIp1'));
+        document.getElementById('btnLoadIp2').addEventListener('click', () => loadCurrentIpToInput('setIp2', 'btnLoadIp2'));
+        
+        document.getElementById('tabBtnExtend').addEventListener('click', (e) => switchTab(e, 'tabExtend'));
+        document.getElementById('tabBtnNewAccount').addEventListener('click', (e) => switchTab(e, 'tabNewAccount'));
+        
+        document.getElementById('btnExtend').addEventListener('click', processExtendVpn);
+        document.getElementById('btnNewAccount').addEventListener('click', processNewAccount);
+    } catch(e) {
+        console.error("이벤트 바인딩 실패:", e);
+    }
+
+    try {
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr("#datePicker", { mode: "multiple", dateFormat: "Y-m-d", locale: "ko" });
+        }
+    } catch(e) { console.error("달력 로드 에러:", e); }
+    
+    try {
+        chrome.storage.local.get(['vpnUserData'], (result) => {
+            if(result.vpnUserData) {
+                userData = result.vpnUserData;
+                updateProfileUI();
+                showView('mainWorkspaceView');
+            }
+        });
+    } catch(e) { console.error("스토리지 로드 에러:", e); }
+});
+
+function showView(viewId) {
+    document.getElementById('settingsView').classList.add('hidden');
+    document.getElementById('mainWorkspaceView').classList.add('hidden');
+    document.getElementById(viewId).classList.remove('hidden');
+}
+
+function openSettings() { 
+    if(userData.ip1) document.getElementById('setIp1').value = userData.ip1;
+    if(userData.ip2) document.getElementById('setIp2').value = userData.ip2;
+    if(userData.jiraId) document.getElementById('setJiraId').value = userData.jiraId; // 👈 추가
+    showView('settingsView'); 
+}
+
+function switchTab(event, tabId) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+}
+
+function updateProfileUI() {
+    document.getElementById('dispName').textContent = `${userData.name} (${userData.id})`;
+    document.getElementById('dispDept').textContent = userData.dept;
+    let ipOptions = `<option value="${userData.ip1}">재택1: ${userData.ip1}</option>`;
+    if(userData.ip2) ipOptions += `<option value="${userData.ip2}">재택2: ${userData.ip2}</option>`;
+    document.querySelectorAll('.ip-selector').forEach(s => s.innerHTML = ipOptions);
+}
+
+function saveSettings() {
+    userData = {
+        name: document.getElementById('setName').value.trim(),
+        id: document.getElementById('setId').value.trim(),
+        jiraId: document.getElementById('setJiraId').value.trim(), // 👈 추가
+        dept: document.getElementById('setDept').value.trim(),
+        ip1: document.getElementById('setIp1').value.trim(),
+        ip2: document.getElementById('setIp2').value.trim()
+    };
+    if(!userData.name || !userData.id || !userData.jiraId || !userData.ip1) return alert("이름, 사번, Jira ID, 재택1 IP 필수");
+    
+    chrome.storage.local.set({vpnUserData: userData}, () => {
+        updateProfileUI();
+        showView('mainWorkspaceView');
+    });
+}
+
+async function loadCurrentIpToInput(inputId, btnId) {
+    const btn = document.getElementById(btnId);
+    btn.textContent = "조회 중...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('https://api.ipify.org?format=json');
+        if (!res.ok) throw new Error("API 통신 실패");
+        const data = await res.json();
+        document.getElementById(inputId).value = data.ip;
+        btn.textContent = "입력 완료";
+    } catch (e) {
+        alert("IP를 불러오지 못했습니다. 사내망 차단 여부를 확인하세요.");
+        btn.textContent = "현재 위치 IP 입력";
+    }
+    
+    setTimeout(() => {
+        btn.textContent = "현재 위치 IP 입력";
+        btn.disabled = false;
+    }, 2000);
+}
+
+const logger = {
+    box: document.getElementById('statusLog'),
+    clear: function() { this.box.innerHTML = ''; this.box.classList.remove('hidden'); },
+    log: function(msg) { this.box.innerHTML += `<div>> ${msg}</div>`; this.box.scrollTop = this.box.scrollHeight; }
+};
+
+async function processExtendVpn() {
+    const datesStr = document.getElementById("datePicker").value;
+    const btn = document.getElementById("btnExtend");
+    if (!datesStr) return alert("날짜 선택 필수");
+    const dates = datesStr.split(", ").sort();
+    
+    btn.disabled = true;
+    logger.clear();
+    logger.log("Jira 일괄 생성 프로세스 시작...");
+
+    const extendData = {
+        ip: document.getElementById("extendVpnIp").value,
+        reason: document.getElementById("reason").value,
+        startTime: document.getElementById("usageStartTime").value,
+        endTime: document.getElementById("usageEndTime").value,
+        user: userData
+    };
+
+    for (let date of dates) {
+        logger.log(`⏳ [${date}] 요청 전송 중...`);
+        try {
+            const res = await new Promise((resolve, reject) => {
+                chrome.runtime.sendMessage({
+                    action: "EXTEND_VPN",
+                    data: { ...extendData, date }
+                }, response => {
+                    if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+                    else resolve(response);
+                });
+            });
+            if(res.error) throw new Error(res.error);
+            logger.log(`✅ [${res.issueKey}] 접수 완료!`);
+        } catch(e) {
+            logger.log(`❌ [${date}] 실패: ${e.message}`);
+        }
+    }
+    btn.disabled = false;
+}
+
+async function processNewAccount() {
+    const systems = Array.from(document.querySelectorAll('input[name="targetSystem"]:checked')).map(cb => cb.value);
+    if (systems.length === 0) return alert("시스템 선택 필수");
+
+    const btn = document.getElementById("btnNewAccount");
+    btn.disabled = true;
+    btn.textContent = "Jira API 호출 중...";
+
+    const newAccountData = {
+        systems,
+        ip: document.getElementById("newAccountIp").value,
+        usagePeriod: document.getElementById("usagePeriod").value,
+        user: userData
+    };
+
+    try {
+        const res = await new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage({
+                action: "CREATE_NEW_ACCOUNT",
+                data: newAccountData
+            }, response => {
+                if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+                else resolve(response);
+            });
+        });
+        if(res.error) throw new Error(res.error);
+        alert(`✅ 신규 계정 신청 완료 (${res.issueKey})\n엑셀 자동 첨부됨.`);
+    } catch(e) {
+        alert(`API 에러: ${e.message}`);
+    }
+    
+    btn.disabled = false;
+    btn.textContent = "Jira 자동 생성 (엑셀 첨부)";
+}

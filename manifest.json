@@ -1,0 +1,20 @@
+{
+  "name": "VPN Request Admin (Jira Automation)",
+  "version": "1.0",
+  "manifest_version": 3,
+  "description": "B tv 큐레이션팀 VPN 계정 및 활성화 연장 자동 신청 툴",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://jira.skbroadband.com/*",
+    "https://api.ipify.org/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "VPN Admin 열기"
+  }
+}
