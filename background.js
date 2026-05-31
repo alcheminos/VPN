@@ -116,17 +116,46 @@ async function handleExtendVpn(data) {
     const { date, ip, reason, startTime, endTime, user } = data;
     const [yyyy, mm, dd] = date.split('-'); 
     
-    // {panel} 매크로를 앞뒤로 씌워 Jira가 내부의 표를 강제로 그리게 만듭니다.
-    const tableDescription = [
-        "반드시 아래 양식에 맞게 입력 부탁드립니다.",
-        "아래 양식 이외 신청 건은 반려처리됩니다.",
-        "",
-        "{panel}",
-        "||구분||SKB 담당자||사용자 소속||사용자 이름||VPN 계정||신청일자(년)||신청일자(월)||신청일자(일)||사용시간(시작)||사용시간(종료)||접속사유||",
-        `|1|${user.name}|${user.dept}|${user.name}|${user.id}|${yyyy}|${mm}|${dd}|${startTime}|${endTime}|${reason}|`,
-        "{panel}"
-    ].join('\n');
-
+    // HTML 태그를 사용해 완벽한 표 구조를 생성합니다. (JEditor 호환)
+    const tableDescription = `
+    <p>반드시 아래 양식에 맞게 입력 부탁드립니다.<br>
+    아래 양식 이외 신청 건은 반려처리됩니다.</p>
+    <table border="1" style="border-collapse: collapse; width: 100%; text-align: center;">
+        <tbody>
+            <tr style="background-color: #f4f5f7;">
+                <td rowspan="2" style="padding: 5px;">구분</td>
+                <td rowspan="2" style="padding: 5px;">SKB 담당자</td>
+                <td rowspan="2" style="padding: 5px;">사용자 소속</td>
+                <td rowspan="2" style="padding: 5px;">사용자 이름</td>
+                <td rowspan="2" style="padding: 5px;">VPN 계정</td>
+                <td colspan="3" style="padding: 5px;">신청일자</td>
+                <td colspan="2" style="padding: 5px;">사용시간</td>
+                <td rowspan="2" style="padding: 5px;">접속사유</td>
+            </tr>
+            <tr style="background-color: #f4f5f7;">
+                <td style="padding: 5px;">년</td>
+                <td style="padding: 5px;">월</td>
+                <td style="padding: 5px;">일</td>
+                <td style="padding: 5px;">시작</td>
+                <td style="padding: 5px;">종료</td>
+            </tr>
+            <tr>
+                <td style="padding: 5px;">1</td>
+                <td style="padding: 5px;">${user.name}</td>
+                <td style="padding: 5px;">${user.dept}</td>
+                <td style="padding: 5px;">${user.name}</td>
+                <td style="padding: 5px;">${user.id}</td>
+                <td style="padding: 5px;">${yyyy}</td>
+                <td style="padding: 5px;">${mm}</td>
+                <td style="padding: 5px;">${dd}</td>
+                <td style="padding: 5px;">${startTime}</td>
+                <td style="padding: 5px;">${endTime}</td>
+                <td style="padding: 5px;">${reason}</td>
+            </tr>
+        </tbody>
+    </table>
+    `;
+    
     const payload = {
         fields: {
             project: { key: PROJECT_KEY },
