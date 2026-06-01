@@ -5,24 +5,25 @@ const PROJECT_KEY = "BTVMKT";
 const TRANSITION_ID_RECEIPT = "4"; 
 
 const SYSTEM_DESTINATIONS = {
-    "EUXP 상용": { ip: "1.255.152.40", port: "TCP 8080, 8443", usage: "EUXP 상용 접속" },
-    "EUXP Pre": { ip: "1.255.128.22", port: "TCP 8443", usage: "EUXP Pre 접속" },
-    "EUXP Stg": { ip: "1.255.86.188", port: "TCP 8443", usage: "EUXP Stg 접속" },
-    "NCMS 상용": { ip: "1.255.152.19", port: "TCP 8001", usage: "NCMS 상용 접속" },
-    "NCMS Pre": { ip: "1.255.128.37", port: "TCP 8443", usage: "NCMS Pre 접속" },
-    "NCMS Stg": { ip: "175.113.150.43", port: "TCP 8443", usage: "NCMS Stg 접속" },
-    "ACS": { ip: "114.202.130.191\n114.202.130.40", port: "TCP 9093", usage: "ACS (Admin/Web)" },
-    "통합ES": { ip: "1.255.140.10", port: "TCP 5601", usage: "통합ES(Kibana)" },
-    "수유 빌드 키바나": { ip: "1.255.152.46", port: "TCP 5601", usage: "수유 빌드 키바나" },
-    "성수 빌드 키바나": { ip: "1.255.152.174", port: "TCP 5601", usage: "성수 빌드 키바나" },
-    "metainfo 키바나": { ip: "116.126.69.77", port: "TCP 5601", usage: "metainfo 키바나" },
-    "미디어디스커버리 1": { ip: "221.140.123.144", port: "TCP 8080, 7070", usage: "미디어디스커버리" },
-    "미디어디스커버리 2": { ip: "221.140.123.143", port: "TCP 8080", usage: "미디어디스커버리" },
-    "미디어디스커버리 3": { ip: "221.140.123.78", port: "TCP 8080", usage: "미디어디스커버리" },
-    "미디어디스커버리 4": { ip: "1.255.113.183", port: "TCP 8080", usage: "미디어디스커버리" },
-    "추천 Admin": { ip: "1.255.152.46", port: "TCP 5630", usage: "추천 Admin 접속" },
-    "ECDN": { ip: "121.125.63.21", port: "TCP 80", usage: "ECDN Web" },
-    "상용DB": { ip: "114.202.130.168", port: "TCP 9090", usage: "상용DB (HTTP접근)" }
+    "EUXP 상용": { ip: "1.255.152.40", port: "TCP 8080, 8443", usage: "EUXP" },
+    "EUXP Pre": { ip: "1.255.128.22", port: "TCP 8443", usage: "EUXP" },
+    "EUXP Stg": { ip: "1.255.86.188", port: "TCP 8443", usage: "EUXP" },
+    "NCMS 상용": { ip: "1.255.152.19", port: "TCP 8001", usage: "NCMS" },
+    "NCMS Pre": { ip: "1.255.128.37", port: "TCP 8443", usage: "NCMS" },
+    "NCMS Stg": { ip: "175.113.150.43", port: "TCP 8443", usage: "NCMS" },
+    "ACS": { ip: "114.202.130.191\n114.202.130.40", port: "TCP 9093", usage: "ACS" },
+    "통합ES": { ip: "1.255.140.10", port: "TCP 5601", usage: "KIBANA" },
+    "수유 빌드 키바나": { ip: "1.255.152.46", port: "TCP 5601", usage: "KIBANA" },
+    "성수 빌드 키바나": { ip: "1.255.152.174", port: "TCP 5601", usage: "KIBANA" },
+    "metainfo 키바나": { ip: "116.126.69.77", port: "TCP 5601", usage: "KIBANA" },
+    // 💡 미디어디스커버리는 NDM으로 변경
+    "미디어디스커버리 1": { ip: "221.140.123.144", port: "TCP 8080, 7070", usage: "NDM" },
+    "미디어디스커버리 2": { ip: "221.140.123.143", port: "TCP 8080", usage: "NDM" },
+    "미디어디스커버리 3": { ip: "221.140.123.78", port: "TCP 8080", usage: "NDM" },
+    "미디어디스커버리 4": { ip: "1.255.113.183", port: "TCP 8080", usage: "NDM" },
+    "추천 Admin": { ip: "1.255.152.46", port: "TCP 5630", usage: "NDM" },
+    "ECDN": { ip: "121.125.63.21", port: "TCP 80", usage: "ETC" },
+    "상용DB": { ip: "114.202.130.168", port: "TCP 9090", usage: "ETC" }
 };
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -95,7 +96,8 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
     const payload = {
         fields: {
             project: { key: PROJECT_KEY },
-            summary: `[신규 신청] ${user.name} - VPN 계정 발급 및 접속지 추가 요청 (${systemNames.join(', ')})`,
+            // 💡 3) Jira 제목 변경: VPN 발급 및 접속지 추가 요청 (이름)
+            summary: `[신규 신청] VPN 발급 및 접속지 추가 요청 (${user.name})`,
             description: descriptionText,
             issuetype: { name: "Task" }, 
             reporter: { name: user.jiraId },
@@ -109,7 +111,7 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
     const excelAoA = [
         ["VPN(SSL VPN) 작업요청서", "", "", "", "", "", "", ""],
         ["요청일시 및 담당자", "", "", "", "", "", "", ""],
-        ["제 목(요청사유)", "", `${systemNames.join(', ')} 접속을 위한 VPN 신규 생성 및 접속지 추가`, "", "", "", "", ""],
+        ["제 목(요청사유)", "", "업무 수행을 위한 VPN 신규 생성 및 접속지 추가", "", "", "", "", ""],
         ["작업 신청일", "", startDate, "", "작업 구분", "", "신규생성", ""],
         ["작업 요청자", "부  서", user.dept, "", "실 사용자명\n(요청자 동일시 작성 불 필요)", "업체명", "SK브로드밴드", ""],
         ["", "담당자/사번", `${user.name} / ${numericId}`, "", "", "이  름", "", ""], 
@@ -280,7 +282,8 @@ async function handleExtendVpn(data) {
     const payload = {
         fields: {
             project: { key: PROJECT_KEY },
-            summary: `[활성화 연장] ${user.name} - ${date} VPN 사용 요청`,
+            // 💡 4) 활성화 제목 변경: [활성화] 날짜 VPN 사용 요청
+            summary: `[활성화] ${date} VPN 사용 요청`,
             description: tableDescription,
             issuetype: { name: "Task" }, 
             reporter: { name: user.jiraId },
