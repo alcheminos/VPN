@@ -2,14 +2,13 @@ importScripts('xlsx.min.js');
 
 const JIRA_BASE_URL = "https://jira.skbroadband.com";
 const PROJECT_KEY = "BTVVPN"; 
-const TRANSITION_ID_RECEIPT = "11"; // (❗ 실제 찾으신 ID로 유지)
+const TRANSITION_ID_RECEIPT = "4"; 
 
+// 💡 3) 시스템 데이터 최신화 반영 (Pre 삭제, RACE/KES 정리)
 const SYSTEM_DESTINATIONS = {
     "EUXP 상용": { ip: "1.255.152.40", port: "TCP 8080, 8443", usage: "EUXP" },
-    "EUXP Pre": { ip: "1.255.128.22", port: "TCP 8443", usage: "EUXP" },
     "EUXP Stg": { ip: "1.255.86.188", port: "TCP 8443", usage: "EUXP" },
     "NCMS 상용": { ip: "1.255.152.19", port: "TCP 8001", usage: "NCMS" },
-    "NCMS Pre": { ip: "1.255.128.37", port: "TCP 8443", usage: "NCMS" },
     "NCMS Stg": { ip: "175.113.150.43", port: "TCP 8443", usage: "NCMS" },
     "ACS": { ip: "114.202.130.191\n114.202.130.40", port: "TCP 9093", usage: "ACS" },
     "통합ES": { ip: "1.255.140.10", port: "TCP 5601", usage: "KIBANA" },
@@ -20,7 +19,8 @@ const SYSTEM_DESTINATIONS = {
     "미디어디스커버리 2": { ip: "221.140.123.143", port: "TCP 8080", usage: "NDM" },
     "미디어디스커버리 3": { ip: "221.140.123.78", port: "TCP 8080", usage: "NDM" },
     "미디어디스커버리 4": { ip: "1.255.113.183", port: "TCP 8080", usage: "NDM" },
-    "추천 Admin": { ip: "1.255.152.46", port: "TCP 5630", usage: "NDM" },
+    "RACE Admin": { ip: "1.255.152.46", port: "TCP 5630", usage: "RACE" },
+    "KES Admin": { ip: "114.202.130.168", port: "TCP 9090", usage: "KES" },
     "ECDN": { ip: "121.125.63.21", port: "TCP 80", usage: "ETC" },
     "상용DB": { ip: "114.202.130.168", port: "TCP 9090", usage: "ETC" }
 };
@@ -84,14 +84,11 @@ async function handleNewAccount(data) {
             description: descriptionText,
             issuetype: { name: "보안 작업 요청서" },
             reporter: { name: user.jiraId }
-            // 💡 담당자(assignee) 완전 삭제
         }
     };
     
     const createRes = await fetchJira('/rest/api/2/issue', 'POST', payload);
     const issueKey = createRes.key;
-
-    // 💡 이슈 생성 완료 후, 담당자 할당 전용 API 호출하던 부분 완전 삭제
 
     const excelAoA = [
         ["VPN(SSL VPN) 작업요청서", "", "", "", "", "", "", ""],
@@ -233,14 +230,11 @@ async function handleExtendVpn(data) {
             description: tableDescription,
             issuetype: { name: "VPN 활성화" },
             reporter: { name: mainUser.jiraId }
-            // 💡 담당자(assignee) 완전 삭제
         }
     };
 
     const createRes = await fetchJira('/rest/api/2/issue', 'POST', payload);
     const issueKey = createRes.key;
-
-    // 💡 이슈 생성 완료 후, 담당자 할당 전용 API 호출하던 부분 완전 삭제
 
     const ipListStr = users.map(u => `* ${u.name}(${u.id}): ${u.ip}`).join('\n');
     const commentPayload = { body: `[재택 접속 정보 자동 기입]\n해당 인원 재택 근무로 인한 접속 IP 추가 공유합니다.\n${ipListStr}` };
