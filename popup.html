@@ -99,14 +99,20 @@
                 </div>
                 
                 <div class="input-group" style="background: #fafbfc; border: 1px solid var(--border); padding: 10px; border-radius: 4px;">
-                    <label>동료 추가 (선택 사항)</label>
-                    <div class="flex-row" style="margin-bottom: 8px;">
-                        <input type="text" id="addMemberName" placeholder="이름" style="flex: 1;">
-                        <div style="display: flex; flex: 1.5;">
-                            <span style="padding: 8px; background: var(--bg); border: 2px solid var(--border); border-right: none; border-radius: 4px 0 0 4px; color: var(--text-sub); font-size: 11px; display: flex; align-items: center;">skb</span>
-                            <input type="text" id="addMemberId" style="border-radius: 0 4px 4px 0;" placeholder="사번 4자리" maxlength="4">
+                    <label style="display: flex; align-items: baseline; gap: 5px;">
+                        동료 추가 
+                        <span style="font-size: 10px; color: var(--text-sub); font-weight: normal;">(이름, 사번, IP 입력 후 + 버튼으로 계속 추가)</span>
+                    </label>
+                    <div class="flex-row" style="margin-bottom: 8px; gap: 6px;">
+                        <input type="text" id="addMemberName" placeholder="이름" style="flex: 1; padding: 6px;">
+                        <div style="display: flex; flex: 1.2;">
+                            <span style="padding: 6px 8px; background: var(--bg); border: 2px solid var(--border); border-right: none; border-radius: 4px 0 0 4px; color: var(--text-sub); font-size: 11px; display: flex; align-items: center;">skb</span>
+                            <input type="text" id="addMemberId" style="border-radius: 0 4px 4px 0; padding: 6px; width: 100%;" placeholder="사번 4자리" maxlength="4">
                         </div>
-                        <button type="button" class="btn btn-outline" id="btnAddMember" style="margin-top:0; height: 35px;">추가</button>
+                        <input type="text" id="addMemberIp" placeholder="IP 주소" style="flex: 1.5; padding: 6px;">
+                        <button type="button" class="btn btn-outline" id="btnAddMember" style="margin-top:0; height: 32px; display: flex; align-items: center; justify-content: center; gap: 2px; border-width: 2px; font-weight: bold; padding: 0 8px;">
+                            <span style="font-size: 14px; line-height: 1;">+</span>
+                        </button>
                     </div>
                     <div id="memberList" style="font-size: 11px; color: var(--text-sub); display: flex; flex-wrap: wrap; gap: 5px;">
                         </div>
