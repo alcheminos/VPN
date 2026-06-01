@@ -166,30 +166,30 @@ async function processExtendVpn() {
         endTime: document.getElementById("usageEndTime").value
     };
 
-    // 💡 신청 대상을 '본인 + 추가된 동료'로 합침
+    // 💡 신청 대상을 '본인 + 추가된 동료'를 하나의 배열로 합침
     const targetUsers = [
         { name: userData.name, id: userData.id, dept: userData.dept, jiraId: userData.jiraId }, 
         ...additionalMembers.map(m => ({ ...m, dept: userData.dept, jiraId: userData.jiraId }))
     ];
 
-    for (let user of targetUsers) {
-        for (let date of dates) {
-            logger.log(`⏳ [${user.name} / ${date}] 요청 중...`);
-            try {
-                const res = await new Promise((resolve, reject) => {
-                    chrome.runtime.sendMessage({
-                        action: "EXTEND_VPN",
-                        data: { ...baseData, date, user } 
-                    }, response => {
-                        if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
-                        else resolve(response);
-                    });
+    // 💡 사람 단위가 아니라 '날짜' 단위로 1번씩만 전송 (users 배열 전체를 통째로 보냄)
+    for (let date of dates) {
+        logger.log(`⏳ [${date}] 일괄 요청 중...`);
+        try {
+            const res = await new Promise((resolve, reject) => {
+                chrome.runtime.sendMessage({
+                    action: "EXTEND_VPN",
+                    // data에 단일 user가 아닌 users 배열과 메인 리포터 정보(mainUser)를 담음
+                    data: { ...baseData, date, users: targetUsers, mainUser: userData } 
+                }, response => {
+                    if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
+                    else resolve(response);
                 });
-                if(res.error) throw new Error(res.error);
-                logger.log(`✅ [${res.issueKey}] ${user.name} 완료`);
-            } catch(e) {
-                logger.log(`❌ [${user.name} / ${date}] 실패: ${e.message}`);
-            }
+            });
+            if(res.error) throw new Error(res.error);
+            logger.log(`✅ [${res.issueKey}] ${date} 완료 (총 ${targetUsers.length}명)`);
+        } catch(e) {
+            logger.log(`❌ [${date}] 실패: ${e.message}`);
         }
     }
     btn.disabled = false;
