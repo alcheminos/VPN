@@ -29,12 +29,12 @@
         .checkbox-group label { font-size: 13px; display: flex; align-items: center; cursor: pointer; margin:0; justify-content: flex-start;}
         .checkbox-group input { width: auto; margin-right: 8px; }
         
-        /* 💡 아코디언 UI 디자인 적용 */
-        details.sys-group { margin-bottom: 4px; }
-        details.sys-group summary { font-weight: 600; color: var(--primary); cursor: pointer; padding: 4px 0; user-select: none; list-style: none; display: flex; align-items: center; font-size: 13px; }
-        details.sys-group summary::-webkit-details-marker { display: none; }
-        details.sys-group summary::before { content: '▶'; font-size: 10px; margin-right: 8px; transition: transform 0.2s; color: var(--text-sub); }
-        details[open].sys-group summary::before { transform: rotate(90deg); }
+        /* 💡 아코디언 UI 디자인: ▶ 화살표 우측 배치 및 기본 화살표 제거 */
+        details.sys-group { margin-bottom: 2px; }
+        details.sys-group summary { font-weight: 600; color: var(--primary); cursor: pointer; padding: 4px 0; user-select: none; list-style: none; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+        details.sys-group summary::-webkit-details-marker { display: none; } /* 기본 화살표 숨김 */
+        details.sys-group summary::after { content: '▶'; font-size: 10px; margin-left: 5px; transition: transform 0.2s; color: var(--text-sub); }
+        details[open].sys-group summary::after { transform: rotate(90deg); }
     </style>
 </head>
 <body>
@@ -142,68 +142,74 @@
                     <label>대상 시스템 (포트)</label>
                     <div class="checkbox-group" style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
                         <label style="font-weight: bold; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-bottom: 8px;">
-                            <input type="checkbox" id="chkSelectAll"> 📌 모두 선택 (기타 제외)
+                            <input type="checkbox" id="chkSelectAll"> 📌 모두 선택 (수동 추가 입력 제외)
                         </label>
 
-                        <details class="sys-group" open>
-                            <summary><input type="checkbox" class="grp-cb" data-target="EUXP"> EUXP 그룹</summary>
-                            <div class="sub-items" style="margin-left: 22px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb EUXP" value="EUXP 상용"> EUXP 상용</label>
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb EUXP" value="EUXP Stg"> EUXP Stg</label>
-                            </div>
-                        </details>
+                        <!-- 💡 2열 Grid 적용 및 아코디언 기본 접힘 처리 -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start;">
+                            
+                            <details class="sys-group">
+                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="EUXP" style="margin-right:8px;"> EUXP</span></summary>
+                                <div class="sub-items" style="margin-left: 24px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; margin-top: 4px;">
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb EUXP" value="EUXP 상용"> EUXP 상용</label>
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb EUXP" value="EUXP Stg"> EUXP Stg</label>
+                                </div>
+                            </details>
 
-                        <details class="sys-group">
-                            <summary><input type="checkbox" class="grp-cb" data-target="NCMS"> NCMS 그룹</summary>
-                            <div class="sub-items" style="margin-left: 22px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb NCMS" value="NCMS 상용"> NCMS 상용</label>
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb NCMS" value="NCMS Stg"> NCMS Stg</label>
-                            </div>
-                        </details>
+                            <details class="sys-group">
+                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="NCMS" style="margin-right:8px;"> NCMS</span></summary>
+                                <div class="sub-items" style="margin-left: 24px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; margin-top: 4px;">
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb NCMS" value="NCMS 상용"> NCMS 상용</label>
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb NCMS" value="NCMS Stg"> NCMS Stg</label>
+                                </div>
+                            </details>
 
-                        <div class="sys-group" style="margin-bottom: 5px; margin-left: 14px;">
-                            <label style="font-weight: 600; color: var(--primary); padding: 4px 0;"><input type="checkbox" name="targetSystem" class="sub-cb ACS" value="ACS"> ACS 시스템</label>
+                            <details class="sys-group">
+                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="KIBANA" style="margin-right:8px;"> Kibana / ES</span></summary>
+                                <div class="sub-items" style="margin-left: 24px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; margin-top: 4px;">
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb KIBANA" value="통합ES"> 통합ES</label>
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb KIBANA" value="수유 빌드 키바나"> 수유 빌드 키바나</label>
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb KIBANA" value="성수 빌드 키바나"> 성수 빌드 키바나</label>
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb KIBANA" value="metainfo 키바나"> metainfo 키바나</label>
+                                </div>
+                            </details>
+
+                            <details class="sys-group">
+                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="MD" style="margin-right:8px;"> 미디어디스커버리</span></summary>
+                                <div class="sub-items" style="margin-left: 24px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; margin-top: 4px;">
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb MD" value="미디어디스커버리 1"> 미디어디스커버리 1</label>
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb MD" value="미디어디스커버리 2"> 미디어디스커버리 2</label>
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb MD" value="미디어디스커버리 3"> 미디어디스커버리 3</label>
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb MD" value="미디어디스커버리 4"> 미디어디스커버리 4</label>
+                                </div>
+                            </details>
+
+                            <details class="sys-group">
+                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="ETC" style="margin-right:8px;"> 기타 단일 시스템</span></summary>
+                                <div class="sub-items" style="margin-left: 24px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; margin-top: 4px;">
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb ETC" value="ECDN"> ECDN</label>
+                                    <label><input type="checkbox" name="targetSystem" class="sub-cb ETC" value="상용DB"> 상용DB</label>
+                                </div>
+                            </details>
+
+                            <!-- 💡 특정 Admin 그룹에서 밖으로 분리된 단일 항목들 -->
+                            <div class="sys-group">
+                                <label style="font-weight: 600; color: var(--primary); padding: 4px 0; display: flex; align-items: center; font-size: 13px; margin: 0;"><input type="checkbox" name="targetSystem" class="sub-cb" value="ACS" style="margin-right:8px;"> ACS</label>
+                            </div>
+
+                            <div class="sys-group">
+                                <label style="font-weight: 600; color: var(--primary); padding: 4px 0; display: flex; align-items: center; font-size: 13px; margin: 0;"><input type="checkbox" name="targetSystem" class="sub-cb" value="RACE Admin" style="margin-right:8px;"> RACE</label>
+                            </div>
+
+                            <div class="sys-group">
+                                <label style="font-weight: 600; color: var(--primary); padding: 4px 0; display: flex; align-items: center; font-size: 13px; margin: 0;"><input type="checkbox" name="targetSystem" class="sub-cb" value="KES Admin" style="margin-right:8px;"> KES</label>
+                            </div>
                         </div>
 
-                        <details class="sys-group">
-                            <summary><input type="checkbox" class="grp-cb" data-target="KIBANA"> Kibana / ES 그룹</summary>
-                            <div class="sub-items" style="margin-left: 22px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb KIBANA" value="통합ES"> 통합ES</label>
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb KIBANA" value="수유 빌드 키바나"> 수유 빌드 키바나</label>
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb KIBANA" value="성수 빌드 키바나"> 성수 빌드 키바나</label>
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb KIBANA" value="metainfo 키바나"> metainfo 키바나</label>
-                            </div>
-                        </details>
-
-                        <details class="sys-group">
-                            <summary><input type="checkbox" class="grp-cb" data-target="MD"> 미디어디스커버리 그룹</summary>
-                            <div class="sub-items" style="margin-left: 22px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb MD" value="미디어디스커버리 1"> 미디어디스커버리 1</label>
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb MD" value="미디어디스커버리 2"> 미디어디스커버리 2</label>
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb MD" value="미디어디스커버리 3"> 미디어디스커버리 3</label>
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb MD" value="미디어디스커버리 4"> 미디어디스커버리 4</label>
-                            </div>
-                        </details>
-
-                        <details class="sys-group">
-                            <summary><input type="checkbox" class="grp-cb" data-target="ADMIN"> 특정 Admin 그룹</summary>
-                            <div class="sub-items" style="margin-left: 22px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb ADMIN" value="RACE Admin"> RACE Admin</label>
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb ADMIN" value="KES Admin"> KES Admin</label>
-                            </div>
-                        </details>
-
-                        <details class="sys-group">
-                            <summary><input type="checkbox" class="grp-cb" data-target="ETC"> 기타 단일 시스템</summary>
-                            <div class="sub-items" style="margin-left: 22px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;">
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb ETC" value="ECDN"> ECDN</label>
-                                <label><input type="checkbox" name="targetSystem" class="sub-cb ETC" value="상용DB"> 상용DB</label>
-                            </div>
-                        </details>
-
+                        <!-- 💡 기타 직접 입력 -> 수동 추가 입력으로 변경 -->
                         <label style="display: flex; align-items: center; margin-bottom: 5px; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; font-weight: bold;">
                             <input type="checkbox" name="targetSystem" value="기타" id="chkOther"> 
-                            기타 (직접 입력)
+                            수동 추가 입력
                         </label>
                         <div id="otherSystemInputs" class="hidden" style="margin-left: 22px; display: flex; flex-direction: column; gap: 6px; padding: 10px; background: #fff; border: 1px solid var(--border); border-radius: 4px;">
                             <input type="text" id="otherIp" style="padding: 6px; border: 1px solid var(--border); border-radius: 4px;" placeholder="IP Address (예: 211.23.45.6)">
@@ -226,7 +232,7 @@
         <div style="background: white; padding: 20px; border-radius: 8px; width: 85%; max-width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
             <h3 style="margin-top:0; color: var(--text-main); font-size: 16px;">✅ Jira 이슈 생성 결과</h3>
             <div id="jiraLinks" style="margin: 15px 0; max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
-                </div>
+            </div>
             <div class="flex-row" style="margin-top: 15px;">
                 <button class="btn flex-1" style="background-color: var(--text-sub); margin-top:0;" onclick="document.getElementById('jiraModal').classList.add('hidden');">닫기</button>
             </div>
