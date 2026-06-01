@@ -10,7 +10,6 @@
     <style>
         :root { --primary: #0052CC; --success: #36B37E; --warning: #FF5630; --bg: #F4F5F7; --border: #DFE1E6; --text-main: #172B4D; --text-sub: #5E6C84; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; width: 450px; min-height: 500px; }
-        /* 💡 상하 여백 전체적으로 축소 */
         header { background-color: var(--primary); color: white; padding: 10px 20px; font-weight: 600; display: flex; justify-content: center; font-size: 15px; }
         .container { padding: 15px; }
         .input-group { margin-bottom: 10px; }
@@ -30,13 +29,17 @@
         .checkbox-group label { font-size: 12px; display: flex; align-items: center; cursor: pointer; margin:0; justify-content: flex-start;}
         .checkbox-group input { width: auto; margin-right: 6px; }
         
-        /* 💡 아코디언 UI 디자인: ◀ 화살표 및 상하 간격 축소 */
         details.sys-group { margin-bottom: 0; }
         details.sys-group summary { font-weight: 600; color: var(--primary); cursor: pointer; padding: 2px 0; user-select: none; list-style: none; display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
         details.sys-group summary::-webkit-details-marker { display: none; }
-        /* 💡 ◀ 모양 적용 및 열릴 때 아래(▼)로 회전 */
         details.sys-group summary::after { content: '◀'; font-size: 10px; margin-left: 5px; transition: transform 0.2s; color: var(--text-sub); }
         details[open].sys-group summary::after { transform: rotate(-90deg); }
+        
+        /* 💡 내부 스크롤바 디자인 예쁘게 다듬기 */
+        .scrollable-group::-webkit-scrollbar { width: 6px; }
+        .scrollable-group::-webkit-scrollbar-track { background: transparent; }
+        .scrollable-group::-webkit-scrollbar-thumb { background: #c1c7d0; border-radius: 3px; }
+        .scrollable-group::-webkit-scrollbar-thumb:hover { background: #a5adba; }
     </style>
 </head>
 <body>
@@ -142,14 +145,12 @@
             <div id="tabNewAccount" class="tab-content">
                 <div class="input-group">
                     <label>대상 시스템 (포트)</label>
-                    <div class="checkbox-group" style="padding-right: 5px;">
+                    <div class="checkbox-group scrollable-group" style="max-height: 195px; overflow-y: auto; overflow-x: hidden; padding-right: 5px;">
                         <label style="font-weight: bold; border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 6px;">
                             <input type="checkbox" id="chkSelectAll"> 📌 모두 선택 (수동 추가 입력 제외)
                         </label>
 
-                        <!-- 💡 Grid 간격을 줄여서 더욱 콤팩트하게 표시 -->
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; align-items: start;">
-                            
                             <details class="sys-group">
                                 <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="EUXP" style="margin-right:6px;"> EUXP</span></summary>
                                 <div class="sub-items" style="margin-left: 20px; display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; margin-top: 2px;">
