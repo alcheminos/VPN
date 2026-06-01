@@ -10,31 +10,33 @@
     <style>
         :root { --primary: #0052CC; --success: #36B37E; --warning: #FF5630; --bg: #F4F5F7; --border: #DFE1E6; --text-main: #172B4D; --text-sub: #5E6C84; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; width: 450px; min-height: 500px; }
-        header { background-color: var(--primary); color: white; padding: 15px 20px; font-weight: 600; display: flex; justify-content: center; font-size: 15px; }
-        .container { padding: 20px; }
-        .input-group { margin-bottom: 12px; }
-        .input-group label { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 5px; }
-        .input-group input, .input-group select { width: 100%; padding: 8px; border: 2px solid var(--border); border-radius: 4px; box-sizing: border-box; }
+        /* 💡 상하 여백 전체적으로 축소 */
+        header { background-color: var(--primary); color: white; padding: 10px 20px; font-weight: 600; display: flex; justify-content: center; font-size: 15px; }
+        .container { padding: 15px; }
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; }
+        .input-group input, .input-group select { width: 100%; padding: 7px; border: 2px solid var(--border); border-radius: 4px; box-sizing: border-box; font-size: 13px; }
         .flex-row { display: flex; gap: 10px; align-items: center; } .flex-1 { flex: 1; }
-        button.btn { background-color: var(--primary); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; margin-top:10px;}
+        button.btn { background-color: var(--primary); color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 8px; font-size: 13px;}
         button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
         button.btn-success { background-color: var(--success); }
         button.btn-outline { background-color: transparent; color: var(--primary); border: 1px solid var(--primary); width: auto; padding: 4px 8px; margin-top: 0; font-size: 11px;}
-        .profile-card { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px 15px; margin-bottom: 20px; }
-        .tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
-        .tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 600; color: var(--text-sub); cursor: pointer; }
+        .profile-card { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 10px 15px; margin-bottom: 15px; }
+        .tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 15px; }
+        .tab { flex: 1; text-align: center; padding: 8px; font-size: 13px; font-weight: 600; color: var(--text-sub); cursor: pointer; }
         .tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
         .tab-content { display: none; } .tab-content.active { display: block; } .hidden { display: none !important; }
-        .checkbox-group { display: flex; flex-direction: column; gap: 8px; background: #fafbfc; padding: 10px; border: 1px solid var(--border); border-radius: 4px; }
-        .checkbox-group label { font-size: 13px; display: flex; align-items: center; cursor: pointer; margin:0; justify-content: flex-start;}
-        .checkbox-group input { width: auto; margin-right: 8px; }
+        .checkbox-group { display: flex; flex-direction: column; gap: 6px; background: #fafbfc; padding: 8px; border: 1px solid var(--border); border-radius: 4px; }
+        .checkbox-group label { font-size: 12px; display: flex; align-items: center; cursor: pointer; margin:0; justify-content: flex-start;}
+        .checkbox-group input { width: auto; margin-right: 6px; }
         
-        /* 💡 아코디언 UI 디자인: ▶ 화살표 우측 배치 및 기본 화살표 제거 */
-        details.sys-group { margin-bottom: 2px; }
-        details.sys-group summary { font-weight: 600; color: var(--primary); cursor: pointer; padding: 4px 0; user-select: none; list-style: none; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
-        details.sys-group summary::-webkit-details-marker { display: none; } /* 기본 화살표 숨김 */
-        details.sys-group summary::after { content: '▶'; font-size: 10px; margin-left: 5px; transition: transform 0.2s; color: var(--text-sub); }
-        details[open].sys-group summary::after { transform: rotate(90deg); }
+        /* 💡 아코디언 UI 디자인: ◀ 화살표 및 상하 간격 축소 */
+        details.sys-group { margin-bottom: 0; }
+        details.sys-group summary { font-weight: 600; color: var(--primary); cursor: pointer; padding: 2px 0; user-select: none; list-style: none; display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+        details.sys-group summary::-webkit-details-marker { display: none; }
+        /* 💡 ◀ 모양 적용 및 열릴 때 아래(▼)로 회전 */
+        details.sys-group summary::after { content: '◀'; font-size: 10px; margin-left: 5px; transition: transform 0.2s; color: var(--text-sub); }
+        details[open].sys-group summary::after { transform: rotate(-90deg); }
     </style>
 </head>
 <body>
@@ -49,7 +51,7 @@
                 <div class="input-group flex-1">
                     <label>사번 (VPN계정)</label>
                     <div style="display: flex;">
-                        <span style="padding: 8px; background: var(--bg); border: 2px solid var(--border); border-right: none; border-radius: 4px 0 0 4px; color: var(--text-sub); font-size: 13px; font-weight: 600; display: flex; align-items: center;">skb</span>
+                        <span style="padding: 7px; background: var(--bg); border: 2px solid var(--border); border-right: none; border-radius: 4px 0 0 4px; color: var(--text-sub); font-size: 12px; font-weight: 600; display: flex; align-items: center;">skb</span>
                         <input type="text" id="setId" style="border-radius: 0 4px 4px 0;" placeholder="숫자만 입력">
                     </div>
                 </div>
@@ -87,10 +89,10 @@
         <div id="mainWorkspaceView" class="hidden">
             <div class="profile-card flex-row" style="justify-content: space-between; align-items: center;">
                 <div>
-                    <div style="font-weight: 600; font-size: 15px;" id="dispName"></div>
-                    <div style="font-size: 12px; color: var(--text-sub); margin-top: 2px;" id="dispDept"></div>
+                    <div style="font-weight: 600; font-size: 14px;" id="dispName"></div>
+                    <div style="font-size: 11px; color: var(--text-sub); margin-top: 2px;" id="dispDept"></div>
                 </div>
-                <button class="btn-outline" id="btnOpenSettings" style="cursor: pointer; padding: 6px 10px; border-radius: 4px; font-size: 12px; background: white; font-weight: bold;">⚙️ 설정</button>
+                <button class="btn-outline" id="btnOpenSettings" style="cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 11px; background: white; font-weight: bold;">⚙️ 설정</button>
             </div>
 
             <div class="tabs">
@@ -99,7 +101,7 @@
             </div>
 
             <div id="tabExtend" class="tab-content active">
-                <div class="flex-row" style="align-items: flex-end; margin-bottom: 12px;">
+                <div class="flex-row" style="align-items: flex-end; margin-bottom: 10px;">
                     <div class="input-group" style="flex: 1.5; margin-bottom: 0;">
                         <label>신청 날짜 (다중 선택)</label>
                         <input type="text" id="datePicker" placeholder="날짜 선택">
@@ -107,29 +109,29 @@
                     <div class="input-group" style="flex: 1; margin-bottom: 0;">
                         <label>사용 시간</label>
                         <div class="flex-row" style="gap: 2px;">
-                            <input type="text" id="usageStartTime" value="09" style="width: 40px; text-align: center; padding: 8px 4px;"> <span style="font-size:12px;">~</span>
-                            <input type="text" id="usageEndTime" value="24" style="width: 40px; text-align: center; padding: 8px 4px;"> <span style="font-size:12px;">시</span>
+                            <input type="text" id="usageStartTime" value="09" style="width: 36px; text-align: center; padding: 7px 4px;"> <span style="font-size:12px;">~</span>
+                            <input type="text" id="usageEndTime" value="24" style="width: 36px; text-align: center; padding: 7px 4px;"> <span style="font-size:12px;">시</span>
                         </div>
                     </div>
                 </div>
                 
-                <div class="input-group" style="background: #fafbfc; border: 1px solid var(--border); padding: 10px; border-radius: 4px;">
+                <div class="input-group" style="background: #fafbfc; border: 1px solid var(--border); padding: 8px; border-radius: 4px;">
                     <label style="display: flex; align-items: baseline; gap: 5px;">
                         동료 추가 
                         <span style="font-size: 10px; color: var(--text-sub); font-weight: normal;">(이름, 사번, IP 입력 후 + 버튼으로 계속 추가)</span>
                     </label>
-                    <div class="flex-row" style="margin-bottom: 8px; gap: 6px;">
+                    <div class="flex-row" style="margin-bottom: 6px; gap: 6px;">
                         <input type="text" id="addMemberName" placeholder="이름" style="flex: 1; padding: 6px;">
                         <div style="display: flex; flex: 1.2;">
                             <span style="padding: 6px 8px; background: var(--bg); border: 2px solid var(--border); border-right: none; border-radius: 4px 0 0 4px; color: var(--text-sub); font-size: 11px; display: flex; align-items: center;">skb</span>
                             <input type="text" id="addMemberId" style="border-radius: 0 4px 4px 0; padding: 6px; width: 100%;" placeholder="사번 4자리" maxlength="4">
                         </div>
                         <input type="text" id="addMemberIp" placeholder="IP 주소" style="flex: 1.5; padding: 6px;">
-                        <button type="button" class="btn btn-outline" id="btnAddMember" style="margin-top:0; height: 32px; display: flex; align-items: center; justify-content: center; gap: 2px; border-width: 2px; font-weight: bold; padding: 0 8px;">
+                        <button type="button" class="btn btn-outline" id="btnAddMember" style="margin-top:0; height: 28px; display: flex; align-items: center; justify-content: center; gap: 2px; border-width: 2px; font-weight: bold; padding: 0 8px;">
                             <span style="font-size: 14px; line-height: 1;">+</span>
                         </button>
                     </div>
-                    <div id="memberList" style="font-size: 11px; color: var(--text-sub); display: flex; flex-wrap: wrap; gap: 5px;"></div>
+                    <div id="memberList" style="font-size: 11px; color: var(--text-sub); display: flex; flex-wrap: wrap; gap: 4px;"></div>
                 </div>
 
                 <div class="input-group"><label>접속할 IP</label><select id="extendVpnIp" class="ip-selector"></select></div>
@@ -140,33 +142,33 @@
             <div id="tabNewAccount" class="tab-content">
                 <div class="input-group">
                     <label>대상 시스템 (포트)</label>
-                    <div class="checkbox-group" style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
-                        <label style="font-weight: bold; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-bottom: 8px;">
+                    <div class="checkbox-group" style="padding-right: 5px;">
+                        <label style="font-weight: bold; border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 6px;">
                             <input type="checkbox" id="chkSelectAll"> 📌 모두 선택 (수동 추가 입력 제외)
                         </label>
 
-                        <!-- 💡 2열 Grid 적용 및 아코디언 기본 접힘 처리 -->
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start;">
+                        <!-- 💡 Grid 간격을 줄여서 더욱 콤팩트하게 표시 -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; align-items: start;">
                             
                             <details class="sys-group">
-                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="EUXP" style="margin-right:8px;"> EUXP</span></summary>
-                                <div class="sub-items" style="margin-left: 24px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; margin-top: 4px;">
+                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="EUXP" style="margin-right:6px;"> EUXP</span></summary>
+                                <div class="sub-items" style="margin-left: 20px; display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; margin-top: 2px;">
                                     <label><input type="checkbox" name="targetSystem" class="sub-cb EUXP" value="EUXP 상용"> EUXP 상용</label>
                                     <label><input type="checkbox" name="targetSystem" class="sub-cb EUXP" value="EUXP Stg"> EUXP Stg</label>
                                 </div>
                             </details>
 
                             <details class="sys-group">
-                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="NCMS" style="margin-right:8px;"> NCMS</span></summary>
-                                <div class="sub-items" style="margin-left: 24px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; margin-top: 4px;">
+                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="NCMS" style="margin-right:6px;"> NCMS</span></summary>
+                                <div class="sub-items" style="margin-left: 20px; display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; margin-top: 2px;">
                                     <label><input type="checkbox" name="targetSystem" class="sub-cb NCMS" value="NCMS 상용"> NCMS 상용</label>
                                     <label><input type="checkbox" name="targetSystem" class="sub-cb NCMS" value="NCMS Stg"> NCMS Stg</label>
                                 </div>
                             </details>
 
                             <details class="sys-group">
-                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="KIBANA" style="margin-right:8px;"> Kibana / ES</span></summary>
-                                <div class="sub-items" style="margin-left: 24px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; margin-top: 4px;">
+                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="KIBANA" style="margin-right:6px;"> Kibana / ES</span></summary>
+                                <div class="sub-items" style="margin-left: 20px; display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; margin-top: 2px;">
                                     <label><input type="checkbox" name="targetSystem" class="sub-cb KIBANA" value="통합ES"> 통합ES</label>
                                     <label><input type="checkbox" name="targetSystem" class="sub-cb KIBANA" value="수유 빌드 키바나"> 수유 빌드 키바나</label>
                                     <label><input type="checkbox" name="targetSystem" class="sub-cb KIBANA" value="성수 빌드 키바나"> 성수 빌드 키바나</label>
@@ -175,8 +177,8 @@
                             </details>
 
                             <details class="sys-group">
-                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="MD" style="margin-right:8px;"> 미디어디스커버리</span></summary>
-                                <div class="sub-items" style="margin-left: 24px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; margin-top: 4px;">
+                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="MD" style="margin-right:6px;"> 미디어디스커버리</span></summary>
+                                <div class="sub-items" style="margin-left: 20px; display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; margin-top: 2px;">
                                     <label><input type="checkbox" name="targetSystem" class="sub-cb MD" value="미디어디스커버리 1"> 미디어디스커버리 1</label>
                                     <label><input type="checkbox" name="targetSystem" class="sub-cb MD" value="미디어디스커버리 2"> 미디어디스커버리 2</label>
                                     <label><input type="checkbox" name="targetSystem" class="sub-cb MD" value="미디어디스커버리 3"> 미디어디스커버리 3</label>
@@ -185,41 +187,39 @@
                             </details>
 
                             <details class="sys-group">
-                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="ETC" style="margin-right:8px;"> 기타 단일 시스템</span></summary>
-                                <div class="sub-items" style="margin-left: 24px; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; margin-top: 4px;">
+                                <summary><span style="display:flex; align-items:center;"><input type="checkbox" class="grp-cb" data-target="ETC" style="margin-right:6px;"> 기타 단일 시스템</span></summary>
+                                <div class="sub-items" style="margin-left: 20px; display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; margin-top: 2px;">
                                     <label><input type="checkbox" name="targetSystem" class="sub-cb ETC" value="ECDN"> ECDN</label>
                                     <label><input type="checkbox" name="targetSystem" class="sub-cb ETC" value="상용DB"> 상용DB</label>
                                 </div>
                             </details>
 
-                            <!-- 💡 특정 Admin 그룹에서 밖으로 분리된 단일 항목들 -->
                             <div class="sys-group">
-                                <label style="font-weight: 600; color: var(--primary); padding: 4px 0; display: flex; align-items: center; font-size: 13px; margin: 0;"><input type="checkbox" name="targetSystem" class="sub-cb" value="ACS" style="margin-right:8px;"> ACS</label>
+                                <label style="font-weight: 600; color: var(--primary); padding: 2px 0; display: flex; align-items: center; font-size: 12px; margin: 0;"><input type="checkbox" name="targetSystem" class="sub-cb" value="ACS" style="margin-right:6px;"> ACS</label>
                             </div>
 
                             <div class="sys-group">
-                                <label style="font-weight: 600; color: var(--primary); padding: 4px 0; display: flex; align-items: center; font-size: 13px; margin: 0;"><input type="checkbox" name="targetSystem" class="sub-cb" value="RACE Admin" style="margin-right:8px;"> RACE</label>
+                                <label style="font-weight: 600; color: var(--primary); padding: 2px 0; display: flex; align-items: center; font-size: 12px; margin: 0;"><input type="checkbox" name="targetSystem" class="sub-cb" value="RACE Admin" style="margin-right:6px;"> RACE</label>
                             </div>
 
                             <div class="sys-group">
-                                <label style="font-weight: 600; color: var(--primary); padding: 4px 0; display: flex; align-items: center; font-size: 13px; margin: 0;"><input type="checkbox" name="targetSystem" class="sub-cb" value="KES Admin" style="margin-right:8px;"> KES</label>
+                                <label style="font-weight: 600; color: var(--primary); padding: 2px 0; display: flex; align-items: center; font-size: 12px; margin: 0;"><input type="checkbox" name="targetSystem" class="sub-cb" value="KES Admin" style="margin-right:6px;"> KES</label>
                             </div>
                         </div>
 
-                        <!-- 💡 기타 직접 입력 -> 수동 추가 입력으로 변경 -->
-                        <label style="display: flex; align-items: center; margin-bottom: 5px; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; font-weight: bold;">
+                        <label style="display: flex; align-items: center; margin-bottom: 4px; margin-top: 6px; border-top: 1px solid var(--border); padding-top: 6px; font-weight: bold;">
                             <input type="checkbox" name="targetSystem" value="기타" id="chkOther"> 
                             수동 추가 입력
                         </label>
-                        <div id="otherSystemInputs" class="hidden" style="margin-left: 22px; display: flex; flex-direction: column; gap: 6px; padding: 10px; background: #fff; border: 1px solid var(--border); border-radius: 4px;">
-                            <input type="text" id="otherIp" style="padding: 6px; border: 1px solid var(--border); border-radius: 4px;" placeholder="IP Address (예: 211.23.45.6)">
-                            <input type="text" id="otherPort" style="padding: 6px; border: 1px solid var(--border); border-radius: 4px;" placeholder="Service Port (예: TCP 3306)">
-                            <input type="text" id="otherUsage" style="padding: 6px; border: 1px solid var(--border); border-radius: 4px;" placeholder="포트 용도 (예: 신규 개발DB)">
+                        <div id="otherSystemInputs" class="hidden" style="margin-left: 20px; display: flex; flex-direction: column; gap: 4px; padding: 8px; background: #fff; border: 1px solid var(--border); border-radius: 4px;">
+                            <input type="text" id="otherIp" style="padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;" placeholder="IP Address (예: 211.23.45.6)">
+                            <input type="text" id="otherPort" style="padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;" placeholder="Service Port (예: TCP 3306)">
+                            <input type="text" id="otherUsage" style="padding: 6px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px;" placeholder="포트 용도 (예: 신규 개발DB)">
                         </div>
                     </div>
                 </div>
                 <div class="input-group"><label>사용할 IP</label><select id="newAccountIp" class="ip-selector"></select></div>
-                <div class="input-group">
+                <div class="input-group" style="margin-bottom: 0;">
                     <label>사용 기간 (PJT기간)</label>
                     <input type="text" id="usagePeriod" value="1년 (고정)" disabled style="background-color: var(--bg); color: var(--text-sub); font-weight: 600; cursor: not-allowed;">
                 </div>
@@ -230,7 +230,7 @@
 
     <div id="jiraModal" class="hidden" style="position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
         <div style="background: white; padding: 20px; border-radius: 8px; width: 85%; max-width: 320px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center;">
-            <h3 style="margin-top:0; color: var(--text-main); font-size: 16px;">✅ Jira 이슈 생성 결과</h3>
+            <h3 style="margin-top:0; color: var(--text-main); font-size: 15px;">✅ Jira 이슈 생성 결과</h3>
             <div id="jiraLinks" style="margin: 15px 0; max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
             </div>
             <div class="flex-row" style="margin-top: 15px;">
