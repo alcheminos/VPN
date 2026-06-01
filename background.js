@@ -54,10 +54,8 @@ async function handleNewAccount(data) {
     const { systems, ip, user } = data;
     const userEmail = `${user.jiraId}@sk.com`;
     
-    // 사번에서 'skb'를 제거하여 숫자만 추출
     const numericId = user.id.replace(/^skb/i, '');
 
-    // 오늘부터 1년(내년 전일) 날짜 자동 계산
     const todayObj = new Date();
     const startY = todayObj.getFullYear();
     const startM = String(todayObj.getMonth() + 1).padStart(2, '0');
@@ -73,13 +71,17 @@ async function handleNewAccount(data) {
     const endDate = `${endY}-${endM}-${endD}`;
     const exactUsagePeriod = `${startDate} ~ ${endDate}`;
 
+    // 💡 systems 배열에서 '기타'인 경우(객체)는 usage 속성 텍스트를 뽑아 이름(문자열) 배열로 변환
+    const systemNames = systems.map(s => typeof s === 'object' ? s.usage : s);
+
     const descriptionText = `B tv 큐레이션/편성 업무 목적 신규 VPN 계정 발급 및 관련 어드민 접속 허용을 요청드립니다.
 ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
 
     const payload = {
         fields: {
             project: { key: PROJECT_KEY },
-            summary: `[신규 신청] ${user.name} - VPN 계정 발급 및 접속지 추가 요청 (${systems.join(', ')})`,
+            // 💡 제목에 직접 입력한 용도 이름이 포함되도록 수정
+            summary: `[신규 신청] ${user.name} - VPN 계정 발급 및 접속지 추가 요청 (${systemNames.join(', ')})`,
             description: descriptionText,
             issuetype: { name: "Task" }, 
             reporter: { name: user.jiraId },
@@ -93,7 +95,8 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
     const excelAoA = [
         ["VPN(SSL VPN) 작업요청서", "", "", "", "", "", "", ""],
         ["요청일시 및 담당자", "", "", "", "", "", "", ""],
-        ["제 목(요청사유)", "", `${systems.join(', ')} 접속을 위한 VPN 신규 생성 및 접속지 추가`, "", "", "", "", ""],
+        // 💡 엑셀 제목에도 직접 입력한 이름이 포함되도록 수정
+        ["제 목(요청사유)", "", `${systemNames.join(', ')} 접속을 위한 VPN 신규 생성 및 접속지 추가`, "", "", "", "", ""],
         ["작업 신청일", "", startDate, "", "작업 구분", "", "신규생성", ""],
         ["작업 요청자", "부  서", user.dept, "", "실 사용자명\n(요청자 동일시 작성 불 필요)", "업체명", "SK브로드밴드", ""],
         ["", "담당자/사번", `${user.name} / ${numericId}`, "", "", "이  름", "", ""], 
@@ -109,9 +112,17 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
     ];
 
     let currentRow = 15;
-    systems.forEach(sysName => {
-        // '기타'로 직접 입력된 경우를 위한 처리 로직
-        const target = SYSTEM_DESTINATIONS[sysName] || { ip: "직접 입력", port: "직접 입력", usage: sysName };
+    systems.forEach(sysItem => {
+        let target;
+        // 💡 넘어온 데이터가 객체(기타)인 경우, 사용자가 입력한 IP, Port, 용도를 그대로 할당
+        if (typeof sysItem === 'object' && sysItem.type === 'other') {
+            target = { ip: sysItem.ip, port: sysItem.port, usage: sysItem.usage };
+        } else {
+            // 기존 고정 시스템인 경우
+            target = SYSTEM_DESTINATIONS[sysItem];
+        }
+        
+        // 엑셀 양식의 각 열(Column)에 맞게 데이터 배치
         excelAoA.push(["재택근무", ip, target.ip, "", target.port, target.usage, "신규", "1년"]); 
         currentRow++;
     });
@@ -148,7 +159,6 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
 
     let mergeRow = 15;
     systems.forEach(() => {
-        // 대상 시스템 갯수(기타 포함)만큼 Destination IP 2칸짜리를 동적으로 병합
         worksheet['!merges'].push({ s: {r:mergeRow, c:2}, e: {r:mergeRow, c:3} });
         mergeRow++;
     });
@@ -207,70 +217,6 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
     formData.append("file", excelBlob, `SSLVPN_신청서_${user.name}.xlsx`);
     
     await fetchJira(`/rest/api/2/issue/${issueKey}/attachments`, 'POST', formData, true);
-    await fetchJira(`/rest/api/2/issue/${issueKey}/transitions`, 'POST', { transition: { id: TRANSITION_ID_RECEIPT } });
-
-    return { success: true, issueKey: issueKey };
-}
-
-async function handleExtendVpn(data) {
-    const { date, ip, reason, startTime, endTime, user } = data;
-    const [yyyy, mm, dd] = date.split('-'); 
-    
-    const tableDescription = `
-<p>반드시 아래 양식에 맞게 입력 부탁드립니다.<br>
-아래 양식 이외 신청 건은 반려처리됩니다.</p>
-<table border="1" style="border-collapse: collapse; width: 100%; text-align: center;">
-    <tbody>
-        <tr style="background-color: #f4f5f7;">
-            <td rowspan="2" style="padding: 5px;">구분</td>
-            <td rowspan="2" style="padding: 5px;">SKB 담당자</td>
-            <td rowspan="2" style="padding: 5px;">사용자 소속</td>
-            <td rowspan="2" style="padding: 5px;">사용자 이름</td>
-            <td rowspan="2" style="padding: 5px;">VPN 계정</td>
-            <td colspan="3" style="padding: 5px;">신청일자</td>
-            <td colspan="2" style="padding: 5px;">사용시간</td>
-            <td rowspan="2" style="padding: 5px;">접속사유</td>
-        </tr>
-        <tr style="background-color: #f4f5f7;">
-            <td style="padding: 5px;">년</td>
-            <td style="padding: 5px;">월</td>
-            <td style="padding: 5px;">일</td>
-            <td style="padding: 5px;">시작</td>
-            <td style="padding: 5px;">종료</td>
-        </tr>
-        <tr>
-            <td style="padding: 5px;">1</td>
-            <td style="padding: 5px;">${user.name}</td>
-            <td style="padding: 5px;">${user.dept}</td>
-            <td style="padding: 5px;">${user.name}</td>
-            <td style="padding: 5px;">${user.id}</td>
-            <td style="padding: 5px;">${yyyy}</td>
-            <td style="padding: 5px;">${mm}</td>
-            <td style="padding: 5px;">${dd}</td>
-            <td style="padding: 5px;">${startTime}</td>
-            <td style="padding: 5px;">${endTime}</td>
-            <td style="padding: 5px;">${reason}</td>
-        </tr>
-    </tbody>
-</table>
-`;
-
-    const payload = {
-        fields: {
-            project: { key: PROJECT_KEY },
-            summary: `[활성화] ${user.name} - ${date} VPN 사용 요청`,
-            description: tableDescription,
-            issuetype: { name: "Task" }, 
-            reporter: { name: user.jiraId },
-            assignee: { name: "hs3986" }
-        }
-    };
-
-    const createRes = await fetchJira('/rest/api/2/issue', 'POST', payload);
-    const issueKey = createRes.key;
-
-    const commentPayload = { body: `[재택 접속 정보 자동 기입]\n해당 인원 재택 근무로 인한 접속 IP 추가 공유합니다.\n*접속 IP:* ${ip}` };
-    await fetchJira(`/rest/api/2/issue/${issueKey}/comment`, 'POST', commentPayload);
     await fetchJira(`/rest/api/2/issue/${issueKey}/transitions`, 'POST', { transition: { id: TRANSITION_ID_RECEIPT } });
 
     return { success: true, issueKey: issueKey };
