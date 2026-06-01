@@ -242,4 +242,65 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    // ==========================================
+    // 💡 체크박스 그룹 및 모두 선택 연동 로직 시작
+    // ==========================================
+    const chkSelectAll = document.getElementById('chkSelectAll');
+    const grpCbs = document.querySelectorAll('.grp-cb');
+    const subCbs = document.querySelectorAll('.sub-cb');
+
+    // 1. 모두 선택 기능 (기타 제외)
+    if (chkSelectAll) {
+        chkSelectAll.addEventListener('change', function() {
+            const isChecked = this.checked;
+            grpCbs.forEach(cb => cb.checked = isChecked);
+            subCbs.forEach(cb => cb.checked = isChecked);
+        });
+    }
+
+    // 2. 그룹 체크박스 클릭 시 (하위 항목 전체 켜기/끄기)
+    grpCbs.forEach(grp => {
+        grp.addEventListener('change', function() {
+            const isChecked = this.checked;
+            const targetClass = this.getAttribute('data-target');
+            const children = document.querySelectorAll(`.sub-cb.${targetClass}`);
+            children.forEach(cb => cb.checked = isChecked);
+            updateSelectAllState();
+        });
+    });
+
+    // 3. 개별 항목 클릭 시 (상위 그룹 및 모두 선택 상태 자동 업데이트)
+    subCbs.forEach(sub => {
+        sub.addEventListener('change', function() {
+            // 소속된 그룹 찾기
+            const classes = Array.from(this.classList);
+            const groupClass = classes.find(c => c !== 'sub-cb' && document.querySelector(`.grp-cb[data-target="${c}"]`));
+            
+            if (groupClass) {
+                const parentGrp = document.querySelector(`.grp-cb[data-target="${groupClass}"]`);
+                const siblings = document.querySelectorAll(`.sub-cb.${groupClass}`);
+                const allChecked = Array.from(siblings).every(c => c.checked);
+                const someChecked = Array.from(siblings).some(c => c.checked);
+                
+                parentGrp.checked = allChecked;
+                // 일부만 체크되었을 때 썸네일(부분 체크) 표시
+                parentGrp.indeterminate = !allChecked && someChecked; 
+            }
+            updateSelectAllState();
+        });
+    });
+
+    // 모두 선택 체크박스 상태 업데이트 함수
+    function updateSelectAllState() {
+        if (!chkSelectAll) return;
+        const allSubCbs = Array.from(document.querySelectorAll('.sub-cb'));
+        const allChecked = allSubCbs.every(c => c.checked);
+        const someChecked = allSubCbs.some(c => c.checked);
+        
+        chkSelectAll.checked = allChecked;
+        chkSelectAll.indeterminate = !allChecked && someChecked;
+    }
+    // ==========================================
+    // 💡 체크박스 그룹 및 모두 선택 연동 로직 끝
+    // ==========================================
 });
