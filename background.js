@@ -54,8 +54,10 @@ async function handleNewAccount(data) {
     const { systems, ip, user } = data;
     const userEmail = `${user.jiraId}@sk.com`;
     
+    // 사번에서 'skb'를 제거하여 숫자만 추출
     const numericId = user.id.replace(/^skb/i, '');
 
+    // 오늘부터 1년(내년 전일) 날짜 자동 계산
     const todayObj = new Date();
     const startY = todayObj.getFullYear();
     const startM = String(todayObj.getMonth() + 1).padStart(2, '0');
@@ -94,25 +96,24 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
         ["제 목(요청사유)", "", `${systems.join(', ')} 접속을 위한 VPN 신규 생성 및 접속지 추가`, "", "", "", "", ""],
         ["작업 신청일", "", startDate, "", "작업 구분", "", "신규생성", ""],
         ["작업 요청자", "부  서", user.dept, "", "실 사용자명\n(요청자 동일시 작성 불 필요)", "업체명", "SK브로드밴드", ""],
-        ["", "담당자/사번", `${user.name} / ${numericId}`, "", "", "이  름", "", ""],
-        ["", "연락처", user.phone, "", "", "연락처", "", ""],
+        ["", "담당자/사번", `${user.name} / ${numericId}`, "", "", "이  름", "", ""], 
+        ["", "연락처", user.phone, "", "", "연락처", "", ""], 
         ["", "", "", "", "", "", "", ""],
         ["VPN 작업 요청사항", "", "", "", "", "", "", ""],
         ["1. 계정 정보", "", "", "", "", "", "", ""],
         ["계정명\n(사번기준)", "", "패스워드\n(초기 패스워드)", "", "", "사용기간(PJT기간)", "", "비고"],
-        [user.id, "", "media123@", "", "", exactUsagePeriod, "", ""],
+        [user.id, "", "media123@", "", "", exactUsagePeriod, "", ""], 
         ["2. 접속지 추가 / 변경", "", "", "", "", "", "", ""],
         ["Source IP", "", "Destination IP", "", "Service Port\n(TCP/UDP)", "포트용도", "작업구분\n(신규,삭제)", "사용기간"],
-        ["접속지 위치", "IP Address", "IP Address", "", "", "", "", ""]
+        ["접속지 위치", "IP Address", "IP Address", "", "", "", "", ""] 
     ];
 
     let currentRow = 15;
     systems.forEach(sysName => {
-        const target = SYSTEM_DESTINATIONS[sysName];
-        if(target) {
-            excelAoA.push(["재택근무", ip, target.ip, "", target.port, target.usage, "신규", "1년"]); 
-            currentRow++;
-        }
+        // '기타'로 직접 입력된 경우를 위한 처리 로직
+        const target = SYSTEM_DESTINATIONS[sysName] || { ip: "직접 입력", port: "직접 입력", usage: sysName };
+        excelAoA.push(["재택근무", ip, target.ip, "", target.port, target.usage, "신규", "1년"]); 
+        currentRow++;
     });
 
     const worksheet = XLSX.utils.aoa_to_sheet(excelAoA);
@@ -146,11 +147,10 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
     ];
 
     let mergeRow = 15;
-    systems.forEach(sysName => {
-        if(SYSTEM_DESTINATIONS[sysName]) {
-            worksheet['!merges'].push({ s: {r:mergeRow, c:2}, e: {r:mergeRow, c:3} });
-            mergeRow++;
-        }
+    systems.forEach(() => {
+        // 대상 시스템 갯수(기타 포함)만큼 Destination IP 2칸짜리를 동적으로 병합
+        worksheet['!merges'].push({ s: {r:mergeRow, c:2}, e: {r:mergeRow, c:3} });
+        mergeRow++;
     });
 
     const range = XLSX.utils.decode_range(worksheet['!ref']);
@@ -159,7 +159,6 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
             const cellAddress = XLSX.utils.encode_cell({c: C, r: R});
             if (!worksheet[cellAddress]) continue;
 
-            // 💡 예외 처리에서 8행("VPN 작업 요청사항")을 제거하여 기본 테두리/색상 조건으로 넘김
             if ([0, 9, 12].includes(R)) {
                 worksheet[cellAddress].s = { 
                     font: { bold: true, sz: (R === 0 ? 16 : 11) }, 
@@ -181,7 +180,7 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
 
             const isGray = 
                 (R === 1) || 
-                (R === 8) || // 💡 8행 추가 (회색 배경 + 가운데 정렬 + 굵은글씨 적용)
+                (R === 8) || 
                 (R === 2 && C === 0) || 
                 (R === 3 && (C === 0 || C === 4)) || 
                 (R === 4 && (C === 0 || C === 1 || C === 4 || C === 5)) || 
@@ -213,7 +212,6 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
     return { success: true, issueKey: issueKey };
 }
 
-// 👇 누락되었던 VPN 활성화(연장) 함수 복구 (JEditor 호환 HTML 표 렌더링 적용)
 async function handleExtendVpn(data) {
     const { date, ip, reason, startTime, endTime, user } = data;
     const [yyyy, mm, dd] = date.split('-'); 
@@ -260,7 +258,7 @@ async function handleExtendVpn(data) {
     const payload = {
         fields: {
             project: { key: PROJECT_KEY },
-            summary: `[활성화] ${user.name} - ${date} VPN 사용 요청`,
+            summary: `[활성화 연장] ${user.name} - ${date} VPN 사용 요청`,
             description: tableDescription,
             issuetype: { name: "Task" }, 
             reporter: { name: user.jiraId },
@@ -271,7 +269,7 @@ async function handleExtendVpn(data) {
     const createRes = await fetchJira('/rest/api/2/issue', 'POST', payload);
     const issueKey = createRes.key;
 
-    const commentPayload = { body: `[접속 정보 기입]\n해당 인원 재택 근무로 인한 접속 IP 추가 공유합니다.\n*접속 IP:* ${ip}` };
+    const commentPayload = { body: `[재택 접속 정보 자동 기입]\n해당 인원 재택 근무로 인한 접속 IP 추가 공유합니다.\n*접속 IP:* ${ip}` };
     await fetchJira(`/rest/api/2/issue/${issueKey}/comment`, 'POST', commentPayload);
     await fetchJira(`/rest/api/2/issue/${issueKey}/transitions`, 'POST', { transition: { id: TRANSITION_ID_RECEIPT } });
 
