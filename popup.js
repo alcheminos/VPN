@@ -156,20 +156,27 @@ async function processExtendVpn() {
 }
 
 async function processNewAccount() {
-    // 💡 체크박스 중 '기타' 선택 시 직접 입력한 텍스트를 배열에 넣는 로직 추가
+    // 💡 기타 선택 시 3개의 입력값을 모두 받아 객체로 저장
     let hasError = false;
     const systems = [];
     document.querySelectorAll('input[name="targetSystem"]:checked').forEach(cb => {
         if(cb.value === '기타') {
-            const otherVal = document.getElementById('otherSystemInput').value.trim();
-            if(otherVal) systems.push(otherVal);
-            else hasError = true;
+            const oIp = document.getElementById('otherIp').value.trim();
+            const oPort = document.getElementById('otherPort').value.trim();
+            const oUsage = document.getElementById('otherUsage').value.trim();
+            
+            if(oIp && oPort && oUsage) {
+                // 배열에 단순 텍스트가 아닌 객체 형태로 삽입
+                systems.push({ type: 'other', ip: oIp, port: oPort, usage: oUsage });
+            } else {
+                hasError = true;
+            }
         } else {
             systems.push(cb.value);
         }
     });
 
-    if (hasError) return alert("기타 시스템 이름을 직접 입력해주세요.");
+    if (hasError) return alert("기타 시스템의 IP, Port, 용도를 모두 입력해주세요.");
     if (systems.length === 0) return alert("대상 시스템을 1개 이상 선택해주세요.");
 
     const btn = document.getElementById("btnNewAccount");
@@ -177,7 +184,7 @@ async function processNewAccount() {
     btn.textContent = "Jira API 호출 중...";
 
     const newAccountData = {
-        systems, // 💡 직접 입력된 텍스트가 포함된 systems 배열 전달
+        systems, 
         ip: document.getElementById("newAccountIp").value,
         user: userData
     };
@@ -203,35 +210,35 @@ async function processNewAccount() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // 전화번호 하이픈 로직 유지
     const phoneInput = document.getElementById('setPhone');
-    
     if (phoneInput) {
         phoneInput.addEventListener('input', function (e) {
-            // 숫자 이외의 문자는 모두 제거
             let val = this.value.replace(/[^0-9]/g, '');
-            
-            // 길이에 따라 하이픈(-) 자동 삽입
             if (val.length < 4) {
                 this.value = val;
             } else if (val.length < 10) {
-                // 9자리 이하 (예: 02-123-4567 또는 010-123-456)
                 this.value = val.substring(0, 3) + '-' + val.substring(3, 6) + '-' + val.substring(6);
             } else {
-                // 10~11자리 정상 휴대폰 번호 (예: 010-1234-5678)
                 this.value = val.substring(0, 3) + '-' + val.substring(3, 7) + '-' + val.substring(7);
             }
         });
     }
+
+    // 💡 기타 체크박스 클릭 시 3개의 입력칸을 가진 div를 띄움
     const chkOther = document.getElementById('chkOther');
     if (chkOther) {
         chkOther.addEventListener('change', function() {
-            const input = document.getElementById('otherSystemInput');
+            const inputDiv = document.getElementById('otherSystemInputs');
             if (this.checked) {
-                input.classList.remove('hidden');
-                input.focus();
+                inputDiv.classList.remove('hidden');
+                document.getElementById('otherIp').focus();
             } else {
-                input.classList.add('hidden');
-                input.value = '';
+                inputDiv.classList.add('hidden');
+                // 체크 해제 시 입력값 초기화
+                document.getElementById('otherIp').value = '';
+                document.getElementById('otherPort').value = '';
+                document.getElementById('otherUsage').value = '';
             }
         });
     }
