@@ -119,11 +119,16 @@
                         <label><input type="checkbox" name="targetSystem" value="ACS"> ACS (80)</label>
                         <label><input type="checkbox" name="targetSystem" value="ECDN"> ECDN (80)</label>
                         <label><input type="checkbox" name="targetSystem" value="상용DB"> 상용DB (9090)</label>
-                        <label style="display: flex; align-items: center;">
+                        
+                        <label style="display: flex; align-items: center; margin-bottom: 5px;">
                             <input type="checkbox" name="targetSystem" value="기타" id="chkOther"> 
-                            기타 
-                            <input type="text" id="otherSystemInput" class="hidden" style="flex: 1; margin-left: 10px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;" placeholder="직접 입력 (예: 개발DB)">
+                            기타 (직접 입력)
                         </label>
+                        <div id="otherSystemInputs" class="hidden" style="margin-left: 20px; display: flex; flex-direction: column; gap: 6px; padding: 10px; background: #fff; border: 1px solid var(--border); border-radius: 4px;">
+                            <input type="text" id="otherIp" style="padding: 6px; border: 1px solid var(--border); border-radius: 4px;" placeholder="IP Address (예: 211.23.45.6)">
+                            <input type="text" id="otherPort" style="padding: 6px; border: 1px solid var(--border); border-radius: 4px;" placeholder="Service Port (예: TCP 3306)">
+                            <input type="text" id="otherUsage" style="padding: 6px; border: 1px solid var(--border); border-radius: 4px;" placeholder="포트 용도 (예: 신규 개발DB)">
+                        </div>
                     </div>
                 </div>
                 <div class="input-group"><label>사용할 IP</label><select id="newAccountIp" class="ip-selector"></select></div>
