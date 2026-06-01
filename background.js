@@ -258,7 +258,7 @@ async function handleExtendVpn(data) {
     const payload = {
         fields: {
             project: { key: PROJECT_KEY },
-            summary: `[활성화 연장] ${user.name} - ${date} VPN 사용 요청`,
+            summary: `[활성화] ${user.name} - ${date} VPN 사용 요청`,
             description: tableDescription,
             issuetype: { name: "Task" }, 
             reporter: { name: user.jiraId },
