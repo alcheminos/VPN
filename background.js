@@ -5,11 +5,24 @@ const PROJECT_KEY = "BTVMKT";
 const TRANSITION_ID_RECEIPT = "4"; 
 
 const SYSTEM_DESTINATIONS = {
-    "EUXP": { ip: "1.255.152.40", port: "TCP 8080, 8443", usage: "EUXP 접속용" },
-    "통합ES": { ip: "1.255.140.10", port: "5601", usage: "Web(Kibana 등)" },
-    "ACS": { ip: "1.255.152.80", port: "80", usage: "Web" },
-    "ECDN": { ip: "121.125.63.21", port: "80", usage: "Web" },
-    "상용DB": { ip: "114.202.130.168", port: "9090", usage: "HTTP(DB접근)" }
+    "EUXP 상용": { ip: "1.255.152.40", port: "TCP 8080, 8443", usage: "EUXP 상용 접속" },
+    "EUXP Pre": { ip: "1.255.128.22", port: "TCP 8443", usage: "EUXP Pre 접속" },
+    "EUXP Stg": { ip: "1.255.86.188", port: "TCP 8443", usage: "EUXP Stg 접속" },
+    "NCMS 상용": { ip: "1.255.152.19", port: "TCP 8001", usage: "NCMS 상용 접속" },
+    "NCMS Pre": { ip: "1.255.128.37", port: "TCP 8443", usage: "NCMS Pre 접속" },
+    "NCMS Stg": { ip: "175.113.150.43", port: "TCP 8443", usage: "NCMS Stg 접속" },
+    "ACS": { ip: "114.202.130.191\n114.202.130.40", port: "TCP 9093", usage: "ACS (Admin/Web)" },
+    "통합ES": { ip: "1.255.140.10", port: "TCP 5601", usage: "통합ES(Kibana)" },
+    "수유 빌드 키바나": { ip: "1.255.152.46", port: "TCP 5601", usage: "수유 빌드 키바나" },
+    "성수 빌드 키바나": { ip: "1.255.152.174", port: "TCP 5601", usage: "성수 빌드 키바나" },
+    "metainfo 키바나": { ip: "116.126.69.77", port: "TCP 5601", usage: "metainfo 키바나" },
+    "미디어디스커버리 1": { ip: "221.140.123.144", port: "TCP 8080, 7070", usage: "미디어디스커버리" },
+    "미디어디스커버리 2": { ip: "221.140.123.143", port: "TCP 8080", usage: "미디어디스커버리" },
+    "미디어디스커버리 3": { ip: "221.140.123.78", port: "TCP 8080", usage: "미디어디스커버리" },
+    "미디어디스커버리 4": { ip: "1.255.113.183", port: "TCP 8080", usage: "미디어디스커버리" },
+    "추천 Admin": { ip: "1.255.152.46", port: "TCP 5630", usage: "추천 Admin 접속" },
+    "ECDN": { ip: "121.125.63.21", port: "TCP 80", usage: "ECDN Web" },
+    "상용DB": { ip: "114.202.130.168", port: "TCP 9090", usage: "상용DB (HTTP접근)" }
 };
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
