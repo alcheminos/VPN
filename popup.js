@@ -41,10 +41,13 @@ function showView(viewId) {
 }
 
 function openSettings() { 
+    if(userData.name) document.getElementById('setName').value = userData.name;
+    if(userData.id) document.getElementById('setId').value = userData.id;
+    if(userData.dept) document.getElementById('setDept').value = userData.dept;
     if(userData.ip1) document.getElementById('setIp1').value = userData.ip1;
     if(userData.ip2) document.getElementById('setIp2').value = userData.ip2;
     if(userData.jiraId) document.getElementById('setJiraId').value = userData.jiraId;
-    if(userData.phone) document.getElementById('setPhone').value = userData.phone; // 👈 추가
+    if(userData.phone) document.getElementById('setPhone').value = userData.phone;
     showView('settingsView'); 
 }
 
