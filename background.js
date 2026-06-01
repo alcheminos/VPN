@@ -4,7 +4,7 @@ const JIRA_BASE_URL = "https://jira.skbroadband.com";
 // 💡 상용화 프로젝트 키 및 상태 ID 세팅
 const PROJECT_KEY = "BTVVPN"; 
 const TRANSITION_ID_RECEIPT = "11"; // (❗ 위에서 알려드린 방법으로 찾은 접수 ID 값으로 수정해 주세요)
-const ASSIGNEE_NAME = "media_vpn"; // (❗ 아이디 형식 체크 필요)
+const ASSIGNEE_NAME = "media_vpn@skbroadband.com"; // (❗ 아이디 형식 체크 필요)
 
 const SYSTEM_DESTINATIONS = {
     "EUXP 상용": { ip: "1.255.152.40", port: "TCP 8080, 8443", usage: "EUXP" },
