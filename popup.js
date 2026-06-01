@@ -183,3 +183,25 @@ async function processNewAccount() {
     btn.disabled = false;
     btn.textContent = "Jira 자동 생성 (엑셀 첨부)";
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const phoneInput = document.getElementById('setPhone');
+    
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function (e) {
+            // 숫자 이외의 문자는 모두 제거
+            let val = this.value.replace(/[^0-9]/g, '');
+            
+            // 길이에 따라 하이픈(-) 자동 삽입
+            if (val.length < 4) {
+                this.value = val;
+            } else if (val.length < 10) {
+                // 9자리 이하 (예: 02-123-4567 또는 010-123-456)
+                this.value = val.substring(0, 3) + '-' + val.substring(3, 6) + '-' + val.substring(6);
+            } else {
+                // 10~11자리 정상 휴대폰 번호 (예: 010-1234-5678)
+                this.value = val.substring(0, 3) + '-' + val.substring(3, 7) + '-' + val.substring(7);
+            }
+        });
+    }
+});
