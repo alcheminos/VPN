@@ -43,7 +43,8 @@ function showView(viewId) {
 function openSettings() { 
     if(userData.ip1) document.getElementById('setIp1').value = userData.ip1;
     if(userData.ip2) document.getElementById('setIp2').value = userData.ip2;
-    if(userData.jiraId) document.getElementById('setJiraId').value = userData.jiraId; // 👈 추가
+    if(userData.jiraId) document.getElementById('setJiraId').value = userData.jiraId;
+    if(userData.phone) document.getElementById('setPhone').value = userData.phone; // 👈 추가
     showView('settingsView'); 
 }
 
@@ -66,12 +67,14 @@ function saveSettings() {
     userData = {
         name: document.getElementById('setName').value.trim(),
         id: document.getElementById('setId').value.trim(),
-        jiraId: document.getElementById('setJiraId').value.trim(), // 👈 추가
+        jiraId: document.getElementById('setJiraId').value.trim(),
         dept: document.getElementById('setDept').value.trim(),
+        phone: document.getElementById('setPhone').value.trim(), // 👈 추가
         ip1: document.getElementById('setIp1').value.trim(),
         ip2: document.getElementById('setIp2').value.trim()
     };
-    if(!userData.name || !userData.id || !userData.jiraId || !userData.ip1) return alert("이름, 사번, Jira ID, 재택1 IP 필수");
+    if(!userData.name || !userData.id || !userData.jiraId || !userData.phone || !userData.ip1) 
+        return alert("이름, 사번, Jira ID, 연락처, 재택1 IP 필수"); // 필수 검증 추가
     
     chrome.storage.local.set({vpnUserData: userData}, () => {
         updateProfileUI();
