@@ -2,8 +2,7 @@ importScripts('xlsx.min.js');
 
 const JIRA_BASE_URL = "https://jira.skbroadband.com";
 const PROJECT_KEY = "BTVVPN"; 
-const TRANSITION_ID_RECEIPT = "4"; // (❗ 꼭 실제 찾으신 ID로 변경해주세요)
-const ASSIGNEE_NAME = "media_vpn@skbroadband.com"; // (❗ 만약 또 담당자 에러가 나면 "media_vpn" 으로 변경해보세요)
+const TRANSITION_ID_RECEIPT = "11"; // (❗ 실제 찾으신 ID로 유지)
 
 const SYSTEM_DESTINATIONS = {
     "EUXP 상용": { ip: "1.255.152.40", port: "TCP 8080, 8443", usage: "EUXP" },
@@ -85,19 +84,14 @@ async function handleNewAccount(data) {
             description: descriptionText,
             issuetype: { name: "보안 작업 요청서" },
             reporter: { name: user.jiraId }
-            // 💡 1. 이슈 생성 시 담당자(assignee) 필드 제외
+            // 💡 담당자(assignee) 완전 삭제
         }
     };
     
     const createRes = await fetchJira('/rest/api/2/issue', 'POST', payload);
     const issueKey = createRes.key;
 
-    // 💡 2. 이슈 생성 완료 후, 담당자 할당 전용 API 호출
-    try {
-        await fetchJira(`/rest/api/2/issue/${issueKey}/assignee`, 'PUT', { name: ASSIGNEE_NAME });
-    } catch(e) {
-        console.warn(`담당자 지정 실패 (Jira 권한/설정 문제): ${e.message}`);
-    }
+    // 💡 이슈 생성 완료 후, 담당자 할당 전용 API 호출하던 부분 완전 삭제
 
     const excelAoA = [
         ["VPN(SSL VPN) 작업요청서", "", "", "", "", "", "", ""],
@@ -239,19 +233,14 @@ async function handleExtendVpn(data) {
             description: tableDescription,
             issuetype: { name: "VPN 활성화" },
             reporter: { name: mainUser.jiraId }
-            // 💡 1. 이슈 생성 시 담당자(assignee) 필드 제외
+            // 💡 담당자(assignee) 완전 삭제
         }
     };
 
     const createRes = await fetchJira('/rest/api/2/issue', 'POST', payload);
     const issueKey = createRes.key;
 
-    // 💡 2. 이슈 생성 완료 후, 담당자 할당 전용 API 호출
-    try {
-        await fetchJira(`/rest/api/2/issue/${issueKey}/assignee`, 'PUT', { name: ASSIGNEE_NAME });
-    } catch(e) {
-        console.warn(`담당자 지정 실패 (Jira 권한/설정 문제): ${e.message}`);
-    }
+    // 💡 이슈 생성 완료 후, 담당자 할당 전용 API 호출하던 부분 완전 삭제
 
     const ipListStr = users.map(u => `* ${u.name}(${u.id}): ${u.ip}`).join('\n');
     const commentPayload = { body: `[재택 접속 정보 자동 기입]\n해당 인원 재택 근무로 인한 접속 IP 추가 공유합니다.\n${ipListStr}` };
