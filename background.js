@@ -1,8 +1,10 @@
 importScripts('xlsx.min.js');
 
 const JIRA_BASE_URL = "https://jira.skbroadband.com";
-const PROJECT_KEY = "BTVMKT"; 
-const TRANSITION_ID_RECEIPT = "4"; 
+// 💡 상용화 프로젝트 키 및 상태 ID 세팅
+const PROJECT_KEY = "BTVVPN"; 
+const TRANSITION_ID_RECEIPT = "11"; // (❗ 위에서 알려드린 방법으로 찾은 접수 ID 값으로 수정해 주세요)
+const ASSIGNEE_NAME = "media_vpn"; // (❗ 아이디 형식 체크 필요)
 
 const SYSTEM_DESTINATIONS = {
     "EUXP 상용": { ip: "1.255.152.40", port: "TCP 8080, 8443", usage: "EUXP" },
@@ -16,7 +18,6 @@ const SYSTEM_DESTINATIONS = {
     "수유 빌드 키바나": { ip: "1.255.152.46", port: "TCP 5601", usage: "KIBANA" },
     "성수 빌드 키바나": { ip: "1.255.152.174", port: "TCP 5601", usage: "KIBANA" },
     "metainfo 키바나": { ip: "116.126.69.77", port: "TCP 5601", usage: "KIBANA" },
-    // 💡 미디어디스커버리는 NDM으로 변경
     "미디어디스커버리 1": { ip: "221.140.123.144", port: "TCP 8080, 7070", usage: "NDM" },
     "미디어디스커버리 2": { ip: "221.140.123.143", port: "TCP 8080", usage: "NDM" },
     "미디어디스커버리 3": { ip: "221.140.123.78", port: "TCP 8080", usage: "NDM" },
@@ -67,41 +68,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function handleNewAccount(data) {
     const { systems, ip, user } = data;
     const userEmail = `${user.jiraId}@sk.com`;
-    
-    // 사번에서 'skb'를 제거하여 숫자만 추출
     const numericId = user.id.replace(/^skb/i, '');
 
-    // 오늘부터 1년(내년 전일) 날짜 자동 계산
     const todayObj = new Date();
-    const startY = todayObj.getFullYear();
-    const startM = String(todayObj.getMonth() + 1).padStart(2, '0');
-    const startD = String(todayObj.getDate()).padStart(2, '0');
-    const startDate = `${startY}-${startM}-${startD}`;
-
-    const endObj = new Date(todayObj);
-    endObj.setFullYear(endObj.getFullYear() + 1);
-    endObj.setDate(endObj.getDate() - 1);
-    const endY = endObj.getFullYear();
-    const endM = String(endObj.getMonth() + 1).padStart(2, '0');
-    const endD = String(endObj.getDate()).padStart(2, '0');
-    const endDate = `${endY}-${endM}-${endD}`;
+    const startDate = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+    const endObj = new Date(todayObj); endObj.setFullYear(endObj.getFullYear() + 1); endObj.setDate(endObj.getDate() - 1);
+    const endDate = `${endObj.getFullYear()}-${String(endObj.getMonth() + 1).padStart(2, '0')}-${String(endObj.getDate()).padStart(2, '0')}`;
     const exactUsagePeriod = `${startDate} ~ ${endDate}`;
 
-    // 시스템 이름 배열 (객체로 넘어온 기타 항목 처리)
     const systemNames = systems.map(s => typeof s === 'object' ? s.usage : s);
-
-    const descriptionText = `B tv 큐레이션/편성 업무 목적 신규 VPN 계정 발급 및 관련 어드민 접속 허용을 요청드립니다.
-${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
+    const descriptionText = `B tv 큐레이션/편성 업무 목적 신규 VPN 계정 발급 및 관련 어드민 접속 허용을 요청드립니다.\n${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
 
     const payload = {
         fields: {
             project: { key: PROJECT_KEY },
-            // 💡 3) Jira 제목 변경: VPN 발급 및 접속지 추가 요청 (이름)
             summary: `[신규 신청] VPN 발급 및 접속지 추가 요청 (${user.name})`,
             description: descriptionText,
-            issuetype: { name: "Task" }, 
+            issuetype: { name: "보안 작업 요청서" }, // 💡 이슈 유형 상용화 세팅
             reporter: { name: user.jiraId },
-            assignee: { name: "hs3986" } 
+            assignee: { name: ASSIGNEE_NAME } // 💡 상용화 담당자 세팅
         }
     };
     
@@ -129,52 +114,30 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
     let currentRow = 15;
     systems.forEach(sysItem => {
         let target;
-        // '기타'로 사용자가 직접 입력한 객체가 들어왔을 경우 처리
-        if (typeof sysItem === 'object' && sysItem.type === 'other') {
-            target = { ip: sysItem.ip, port: sysItem.port, usage: sysItem.usage };
-        } else {
-            target = SYSTEM_DESTINATIONS[sysItem];
-        }
-        
+        if (typeof sysItem === 'object' && sysItem.type === 'other') target = { ip: sysItem.ip, port: sysItem.port, usage: sysItem.usage };
+        else target = SYSTEM_DESTINATIONS[sysItem];
         excelAoA.push(["재택근무", ip, target.ip, "", target.port, target.usage, "신규", "1년"]); 
         currentRow++;
     });
 
     const worksheet = XLSX.utils.aoa_to_sheet(excelAoA);
-
-    worksheet['!cols'] = [
-        {wch: 15}, {wch: 15}, {wch: 18}, {wch: 20}, {wch: 18}, {wch: 15}, {wch: 12}, {wch: 25}
-    ];
+    worksheet['!cols'] = [{wch: 15}, {wch: 15}, {wch: 18}, {wch: 20}, {wch: 18}, {wch: 15}, {wch: 12}, {wch: 25}];
 
     worksheet['!merges'] = [
-        { s: {r:0, c:0}, e: {r:0, c:7} }, 
-        { s: {r:1, c:0}, e: {r:1, c:7} }, 
-        { s: {r:2, c:0}, e: {r:2, c:1} }, { s: {r:2, c:2}, e: {r:2, c:7} }, 
+        { s: {r:0, c:0}, e: {r:0, c:7} }, { s: {r:1, c:0}, e: {r:1, c:7} }, { s: {r:2, c:0}, e: {r:2, c:1} }, { s: {r:2, c:2}, e: {r:2, c:7} }, 
         { s: {r:3, c:0}, e: {r:3, c:1} }, { s: {r:3, c:2}, e: {r:3, c:3} }, { s: {r:3, c:4}, e: {r:3, c:5} }, { s: {r:3, c:6}, e: {r:3, c:7} }, 
-        { s: {r:4, c:0}, e: {r:6, c:0} }, 
-        { s: {r:4, c:4}, e: {r:6, c:4} }, 
-        { s: {r:4, c:2}, e: {r:4, c:3} }, { s: {r:4, c:6}, e: {r:4, c:7} }, 
-        { s: {r:5, c:2}, e: {r:5, c:3} }, { s: {r:5, c:6}, e: {r:5, c:7} }, 
-        { s: {r:6, c:2}, e: {r:6, c:3} }, { s: {r:6, c:6}, e: {r:6, c:7} }, 
-        { s: {r:8, c:0}, e: {r:8, c:7} }, 
-        { s: {r:9, c:0}, e: {r:9, c:7} }, 
+        { s: {r:4, c:0}, e: {r:6, c:0} }, { s: {r:4, c:4}, e: {r:6, c:4} }, { s: {r:4, c:2}, e: {r:4, c:3} }, { s: {r:4, c:6}, e: {r:4, c:7} }, 
+        { s: {r:5, c:2}, e: {r:5, c:3} }, { s: {r:5, c:6}, e: {r:5, c:7} }, { s: {r:6, c:2}, e: {r:6, c:3} }, { s: {r:6, c:6}, e: {r:6, c:7} }, 
+        { s: {r:8, c:0}, e: {r:8, c:7} }, { s: {r:9, c:0}, e: {r:9, c:7} }, 
         { s: {r:10, c:0}, e: {r:10, c:1} }, { s: {r:10, c:2}, e: {r:10, c:4} }, { s: {r:10, c:5}, e: {r:10, c:6} }, 
         { s: {r:11, c:0}, e: {r:11, c:1} }, { s: {r:11, c:2}, e: {r:11, c:4} }, { s: {r:11, c:5}, e: {r:11, c:6} }, 
-        { s: {r:12, c:0}, e: {r:12, c:7} }, 
-        { s: {r:13, c:0}, e: {r:13, c:1} }, 
-        { s: {r:13, c:2}, e: {r:13, c:3} }, 
-        { s: {r:13, c:4}, e: {r:14, c:4} }, 
-        { s: {r:13, c:5}, e: {r:14, c:5} }, 
-        { s: {r:13, c:6}, e: {r:14, c:6} }, 
-        { s: {r:13, c:7}, e: {r:14, c:7} }, 
-        { s: {r:14, c:2}, e: {r:14, c:3} }  
+        { s: {r:12, c:0}, e: {r:12, c:7} }, { s: {r:13, c:0}, e: {r:13, c:1} }, { s: {r:13, c:2}, e: {r:13, c:3} }, 
+        { s: {r:13, c:4}, e: {r:14, c:4} }, { s: {r:13, c:5}, e: {r:14, c:5} }, { s: {r:13, c:6}, e: {r:14, c:6} }, 
+        { s: {r:13, c:7}, e: {r:14, c:7} }, { s: {r:14, c:2}, e: {r:14, c:3} }  
     ];
 
     let mergeRow = 15;
-    systems.forEach(() => {
-        worksheet['!merges'].push({ s: {r:mergeRow, c:2}, e: {r:mergeRow, c:3} });
-        mergeRow++;
-    });
+    systems.forEach(() => { worksheet['!merges'].push({ s: {r:mergeRow, c:2}, e: {r:mergeRow, c:3} }); mergeRow++; });
 
     const range = XLSX.utils.decode_range(worksheet['!ref']);
     for (let R = range.s.r; R <= range.e.r; R++) {
@@ -183,40 +146,20 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
             if (!worksheet[cellAddress]) continue;
 
             if ([0, 9, 12].includes(R)) {
-                worksheet[cellAddress].s = { 
-                    font: { bold: true, sz: (R === 0 ? 16 : 11) }, 
-                    alignment: { vertical: "center", horizontal: (R === 0 ? "center" : "left") }
-                };
+                worksheet[cellAddress].s = { font: { bold: true, sz: (R === 0 ? 16 : 11) }, alignment: { vertical: "center", horizontal: (R === 0 ? "center" : "left") } };
                 continue;
             }
             if (R === 7) continue; 
 
             let cellStyle = {
                 alignment: { horizontal: "center", vertical: "center", wrapText: true },
-                border: {
-                    top: { style: "thin", color: { rgb: "000000" } },
-                    bottom: { style: "thin", color: { rgb: "000000" } },
-                    left: { style: "thin", color: { rgb: "000000" } },
-                    right: { style: "thin", color: { rgb: "000000" } }
-                }
+                border: { top: { style: "thin", color: { rgb: "000000" } }, bottom: { style: "thin", color: { rgb: "000000" } }, left: { style: "thin", color: { rgb: "000000" } }, right: { style: "thin", color: { rgb: "000000" } } }
             };
 
-            const isGray = 
-                (R === 1) || 
-                (R === 8) || 
-                (R === 2 && C === 0) || 
-                (R === 3 && (C === 0 || C === 4)) || 
-                (R === 4 && (C === 0 || C === 1 || C === 4 || C === 5)) || 
-                (R === 5 && (C === 1 || C === 5)) || 
-                (R === 6 && (C === 1 || C === 5)) || 
-                (R === 10 && (C === 0 || C === 2 || C === 5 || C === 7)) || 
-                (R === 13) || (R === 14);
+            const isGray = (R === 1) || (R === 8) || (R === 2 && C === 0) || (R === 3 && (C === 0 || C === 4)) || (R === 4 && (C === 0 || C === 1 || C === 4 || C === 5)) || 
+                (R === 5 && (C === 1 || C === 5)) || (R === 6 && (C === 1 || C === 5)) || (R === 10 && (C === 0 || C === 2 || C === 5 || C === 7)) || (R === 13) || (R === 14);
 
-            if (isGray) {
-                cellStyle.fill = { fgColor: { rgb: "FFF2F2F2" } };
-                cellStyle.font = { bold: true };
-            }
-
+            if (isGray) { cellStyle.fill = { fgColor: { rgb: "FFF2F2F2" } }; cellStyle.font = { bold: true }; }
             worksheet[cellAddress].s = cellStyle;
         }
     }
@@ -226,8 +169,7 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const excelBlob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     
-    const formData = new FormData();
-    formData.append("file", excelBlob, `SSLVPN_신청서_${user.name}.xlsx`);
+    const formData = new FormData(); formData.append("file", excelBlob, `SSLVPN_신청서_${user.name}.xlsx`);
     
     await fetchJira(`/rest/api/2/issue/${issueKey}/attachments`, 'POST', formData, true);
     await fetchJira(`/rest/api/2/issue/${issueKey}/transitions`, 'POST', { transition: { id: TRANSITION_ID_RECEIPT } });
@@ -236,11 +178,9 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
 }
 
 async function handleExtendVpn(data) {
-    // 💡 단일 user가 아닌 배열 형태의 users와 mainUser를 받아옵니다
-    const { date, ip, reason, startTime, endTime, users, mainUser } = data;
+    const { date, reason, startTime, endTime, users, mainUser } = data;
     const [yyyy, mm, dd] = date.split('-'); 
     
-    // 💡 동적으로 인원수(users 배열 길이)만큼 표의 행(tr)을 생성합니다
     let rowsHtml = '';
     users.forEach((u, index) => {
         rowsHtml += `
@@ -291,16 +231,19 @@ async function handleExtendVpn(data) {
             project: { key: PROJECT_KEY },
             summary: `[활성화] ${date} VPN 사용 요청`,
             description: tableDescription,
-            issuetype: { name: "Task" }, 
-            reporter: { name: mainUser.jiraId }, // 메인 유저 이름으로 리포터 설정
-            assignee: { name: "hs3986" }
+            issuetype: { name: "VPN 활성화" }, // 💡 이슈 유형 상용화 세팅
+            reporter: { name: mainUser.jiraId },
+            assignee: { name: ASSIGNEE_NAME } // 💡 상용화 담당자 세팅
         }
     };
 
     const createRes = await fetchJira('/rest/api/2/issue', 'POST', payload);
     const issueKey = createRes.key;
 
-    const commentPayload = { body: `[재택 접속 정보 자동 기입]\n해당 인원 재택 근무로 인한 접속 IP 추가 공유합니다.\n*접속 IP:* ${ip}` };
+    // 💡 IP 리스트를 목록형으로 나열하여 댓글 본문 생성
+    const ipListStr = users.map(u => `* ${u.name}(${u.id}): ${u.ip}`).join('\n');
+    const commentPayload = { body: `[재택 접속 정보 자동 기입]\n해당 인원 재택 근무로 인한 접속 IP 추가 공유합니다.\n${ipListStr}` };
+    
     await fetchJira(`/rest/api/2/issue/${issueKey}/comment`, 'POST', commentPayload);
     await fetchJira(`/rest/api/2/issue/${issueKey}/transitions`, 'POST', { transition: { id: TRANSITION_ID_RECEIPT } });
 
