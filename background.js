@@ -271,7 +271,7 @@ async function handleExtendVpn(data) {
     const createRes = await fetchJira('/rest/api/2/issue', 'POST', payload);
     const issueKey = createRes.key;
 
-    const commentPayload = { body: `[재택 접속 정보 자동 기입]\n해당 인원 재택 근무로 인한 접속 IP 추가 공유합니다.\n*접속 IP:* ${ip}` };
+    const commentPayload = { body: `[접속 정보 기입]\n해당 인원 재택 근무로 인한 접속 IP 추가 공유합니다.\n*접속 IP:* ${ip}` };
     await fetchJira(`/rest/api/2/issue/${issueKey}/comment`, 'POST', commentPayload);
     await fetchJira(`/rest/api/2/issue/${issueKey}/transitions`, 'POST', { transition: { id: TRANSITION_ID_RECEIPT } });
 
