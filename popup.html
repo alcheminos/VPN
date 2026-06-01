@@ -42,7 +42,13 @@
         <div id="settingsView">
             <div class="flex-row">
                 <div class="input-group flex-1"><label>이름</label><input type="text" id="setName" value="심효섭"></div>
-                <div class="input-group flex-1"><label>사번 (VPN계정, skb0000)</label><input type="text" id="setId" value="skb3986"></div>
+                <div class="input-group flex-1">
+                    <label>사번 (VPN계정)</label>
+                    <div style="display: flex;">
+                        <span style="padding: 8px; background: var(--bg); border: 2px solid var(--border); border-right: none; border-radius: 4px 0 0 4px; color: var(--text-sub); font-size: 13px; font-weight: 600; display: flex; align-items: center;">skb</span>
+                        <input type="text" id="setId" style="border-radius: 0 4px 4px 0;" placeholder="숫자만 입력">
+                    </div>
+                </div>
             </div>
             <div class="flex-row">
                 <div class="input-group flex-1">
@@ -113,12 +119,17 @@
                         <label><input type="checkbox" name="targetSystem" value="ACS"> ACS (80)</label>
                         <label><input type="checkbox" name="targetSystem" value="ECDN"> ECDN (80)</label>
                         <label><input type="checkbox" name="targetSystem" value="상용DB"> 상용DB (9090)</label>
+                        <label style="display: flex; align-items: center;">
+                            <input type="checkbox" name="targetSystem" value="기타" id="chkOther"> 
+                            기타 
+                            <input type="text" id="otherSystemInput" class="hidden" style="flex: 1; margin-left: 10px; padding: 4px; border: 1px solid var(--border); border-radius: 4px;" placeholder="직접 입력 (예: 개발DB)">
+                        </label>
                     </div>
                 </div>
                 <div class="input-group"><label>사용할 IP</label><select id="newAccountIp" class="ip-selector"></select></div>
                 <div class="input-group">
                     <label>사용 기간 (PJT기간)</label>
-                    <input type="text" id="usagePeriod" value="1년">
+                    <input type="text" id="usagePeriod" value="1년 (고정)" disabled style="background-color: var(--bg); color: var(--text-sub); font-weight: 600; cursor: not-allowed;">
                 </div>
                 <button id="btnNewAccount" class="btn btn-success">Jira 자동 생성 (엑셀 첨부)</button>
             </div>
