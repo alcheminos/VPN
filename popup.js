@@ -119,36 +119,33 @@ const logger = {
     log: function(msg) { this.box.innerHTML += `<div>> ${msg}</div>`; this.box.scrollTop = this.box.scrollHeight; }
 };
 
-// 💡 동료 추가 기능 함수들
+// 💡 동료 추가 기능 함수들 (IP 추가)
 function addMember() {
     const name = document.getElementById('addMemberName').value.trim();
     const id = document.getElementById('addMemberId').value.trim();
+    const ip = document.getElementById('addMemberIp').value.trim();
     
-    if(!name || id.length !== 4) return alert("이름과 사번 4자리를 정확히 입력해주세요.");
+    if(!name || id.length !== 4 || !ip) return alert("이름, 사번 4자리, IP 주소를 모두 정확히 입력해주세요.");
     if(additionalMembers.some(m => m.id === 'skb' + id)) return alert("이미 추가된 사번입니다.");
 
-    additionalMembers.push({ name, id: 'skb' + id });
+    additionalMembers.push({ name, id: 'skb' + id, ip });
     renderMemberList();
     
     document.getElementById('addMemberName').value = '';
     document.getElementById('addMemberId').value = '';
+    document.getElementById('addMemberIp').value = '';
 }
 
 function renderMemberList() {
     const container = document.getElementById('memberList');
     container.innerHTML = additionalMembers.map((m, index) => 
         `<span style="background: #ebecf0; padding: 3px 8px; border-radius: 10px; display: flex; align-items: center;">
-            ${m.name}(${m.id}) <span style="margin-left:6px; cursor:pointer; font-weight:bold; color:#ff5630;" onclick="removeMember(${index})">×</span>
+            ${m.name}(${m.id}) - ${m.ip} <span style="margin-left:6px; cursor:pointer; font-weight:bold; color:#ff5630;" onclick="removeMember(${index})">×</span>
         </span>`
     ).join('');
 }
 
-window.removeMember = (index) => {
-    additionalMembers.splice(index, 1);
-    renderMemberList();
-};
-// ----------------------------
-
+// 💡 연장(활성화) 프로세스에서 각 인원의 IP 맵핑
 async function processExtendVpn() {
     const datesStr = document.getElementById("datePicker").value;
     const btn = document.getElementById("btnExtend");
@@ -160,26 +157,24 @@ async function processExtendVpn() {
     logger.log("VPN 활성화 프로세스 시작...");
 
     const baseData = {
-        ip: document.getElementById("extendVpnIp").value,
         reason: document.getElementById("reason").value,
         startTime: document.getElementById("usageStartTime").value,
         endTime: document.getElementById("usageEndTime").value
     };
 
-    // 💡 신청 대상을 '본인 + 추가된 동료'를 하나의 배열로 합침
+    // 💡 메인 신청자의 IP는 상단의 extendVpnIp(셀렉트박스)에서 가져옴
+    const mainUserIp = document.getElementById("extendVpnIp").value;
     const targetUsers = [
-        { name: userData.name, id: userData.id, dept: userData.dept, jiraId: userData.jiraId }, 
+        { name: userData.name, id: userData.id, dept: userData.dept, jiraId: userData.jiraId, ip: mainUserIp }, 
         ...additionalMembers.map(m => ({ ...m, dept: userData.dept, jiraId: userData.jiraId }))
     ];
 
-    // 💡 사람 단위가 아니라 '날짜' 단위로 1번씩만 전송 (users 배열 전체를 통째로 보냄)
     for (let date of dates) {
         logger.log(`⏳ [${date}] 일괄 요청 중...`);
         try {
             const res = await new Promise((resolve, reject) => {
                 chrome.runtime.sendMessage({
                     action: "EXTEND_VPN",
-                    // data에 단일 user가 아닌 users 배열과 메인 리포터 정보(mainUser)를 담음
                     data: { ...baseData, date, users: targetUsers, mainUser: userData } 
                 }, response => {
                     if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
