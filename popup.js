@@ -1,5 +1,5 @@
 let userData = {};
-let additionalMembers = []; // 💡 동료 명단 배열 (전역 변수)
+let additionalMembers = []; 
 
 document.addEventListener("DOMContentLoaded", () => {
     try {
@@ -15,8 +15,15 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('btnExtend').addEventListener('click', processExtendVpn);
         document.getElementById('btnNewAccount').addEventListener('click', processNewAccount);
 
-        // 💡 동료 추가 버튼 이벤트 리스너
         document.getElementById('btnAddMember').addEventListener('click', addMember);
+
+        // 엔터 키로 멤버 추가 가능하도록
+        const idInput = document.getElementById('addMemberIp');
+        if (idInput) {
+            idInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); addMember(); }
+            });
+        }
     } catch(e) {
         console.error("이벤트 바인딩 실패:", e);
     }
@@ -72,7 +79,6 @@ function updateProfileUI() {
 
 function saveSettings() {
     let rawId = document.getElementById('setId').value.trim().replace(/^skb/i, '');
-
     userData = {
         name: document.getElementById('setName').value.trim(),
         id: 'skb' + rawId, 
@@ -95,7 +101,6 @@ async function loadCurrentIpToInput(inputId, btnId) {
     const btn = document.getElementById(btnId);
     btn.textContent = "조회 중...";
     btn.disabled = true;
-
     try {
         const res = await fetch('https://api.ipify.org?format=json');
         if (!res.ok) throw new Error("API 통신 실패");
@@ -106,20 +111,27 @@ async function loadCurrentIpToInput(inputId, btnId) {
         alert("IP를 불러오지 못했습니다. 사내망 차단 여부를 확인하세요.");
         btn.textContent = "현재 위치 IP 입력";
     }
-    
-    setTimeout(() => {
-        btn.textContent = "현재 위치 IP 입력";
-        btn.disabled = false;
-    }, 2000);
+    setTimeout(() => { btn.textContent = "현재 위치 IP 입력"; btn.disabled = false; }, 2000);
 }
 
-const logger = {
-    box: document.getElementById('statusLog'),
-    clear: function() { this.box.innerHTML = ''; this.box.classList.remove('hidden'); },
-    log: function(msg) { this.box.innerHTML += `<div>> ${msg}</div>`; this.box.scrollTop = this.box.scrollHeight; }
-};
+// 💡 공통 모달 팝업 함수
+function showJiraModal(results) {
+    const container = document.getElementById('jiraLinks');
+    container.innerHTML = results.map(res => {
+        if (res.success) {
+            return `<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #e3fcef; border-radius: 4px; border-left: 4px solid var(--success);">
+                <div style="font-weight: bold; color: var(--text-main); font-size: 13px;">${res.key}</div>
+                <a href="https://jira.skbroadband.com/browse/${res.key}" target="_blank" class="btn-outline" style="text-decoration: none; padding: 4px 10px; border-radius: 4px; font-size: 11px;">바로 가기</a>
+            </div>`;
+        } else {
+            return `<div style="padding: 10px; background: #ffebe6; border-radius: 4px; border-left: 4px solid var(--warning); color: var(--text-main); font-size: 12px; text-align: left; line-height: 1.4;">
+                <span style="font-weight: bold; color: var(--warning);">오류:</span> ${res.msg}
+            </div>`;
+        }
+    }).join('');
+    document.getElementById('jiraModal').classList.remove('hidden');
+}
 
-// 💡 동료 추가 기능 함수들 (IP 추가)
 function addMember() {
     const name = document.getElementById('addMemberName').value.trim();
     const id = document.getElementById('addMemberId').value.trim();
@@ -145,7 +157,8 @@ function renderMemberList() {
     ).join('');
 }
 
-// 💡 연장(활성화) 프로세스에서 각 인원의 IP 맵핑
+window.removeMember = (index) => { additionalMembers.splice(index, 1); renderMemberList(); };
+
 async function processExtendVpn() {
     const datesStr = document.getElementById("datePicker").value;
     const btn = document.getElementById("btnExtend");
@@ -153,8 +166,7 @@ async function processExtendVpn() {
     const dates = datesStr.split(", ").sort();
     
     btn.disabled = true;
-    logger.clear();
-    logger.log("VPN 활성화 프로세스 시작...");
+    btn.textContent = "Jira 전송 중...";
 
     const baseData = {
         reason: document.getElementById("reason").value,
@@ -162,32 +174,30 @@ async function processExtendVpn() {
         endTime: document.getElementById("usageEndTime").value
     };
 
-    // 💡 메인 신청자의 IP는 상단의 extendVpnIp(셀렉트박스)에서 가져옴
     const mainUserIp = document.getElementById("extendVpnIp").value;
     const targetUsers = [
         { name: userData.name, id: userData.id, dept: userData.dept, jiraId: userData.jiraId, ip: mainUserIp }, 
         ...additionalMembers.map(m => ({ ...m, dept: userData.dept, jiraId: userData.jiraId }))
     ];
 
+    let results = [];
     for (let date of dates) {
-        logger.log(`⏳ [${date}] 일괄 요청 중...`);
         try {
             const res = await new Promise((resolve, reject) => {
-                chrome.runtime.sendMessage({
-                    action: "EXTEND_VPN",
-                    data: { ...baseData, date, users: targetUsers, mainUser: userData } 
-                }, response => {
-                    if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
-                    else resolve(response);
+                chrome.runtime.sendMessage({ action: "EXTEND_VPN", data: { ...baseData, date, users: targetUsers, mainUser: userData } }, response => {
+                    if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message)); else resolve(response);
                 });
             });
             if(res.error) throw new Error(res.error);
-            logger.log(`✅ [${res.issueKey}] ${date} 완료 (총 ${targetUsers.length}명)`);
+            results.push({ success: true, key: res.issueKey });
         } catch(e) {
-            logger.log(`❌ [${date}] 실패: ${e.message}`);
+            results.push({ success: false, msg: `[${date}] ${e.message}` });
         }
     }
     btn.disabled = false;
+    btn.textContent = "선택 날짜 일괄 신청";
+    
+    if(results.length > 0) showJiraModal(results);
 }
 
 async function processNewAccount() {
@@ -198,12 +208,8 @@ async function processNewAccount() {
             const oIp = document.getElementById('otherIp').value.trim();
             const oPort = document.getElementById('otherPort').value.trim();
             const oUsage = document.getElementById('otherUsage').value.trim();
-            
-            if(oIp && oPort && oUsage) {
-                systems.push({ type: 'other', ip: oIp, port: oPort, usage: oUsage });
-            } else {
-                hasError = true;
-            }
+            if(oIp && oPort && oUsage) systems.push({ type: 'other', ip: oIp, port: oPort, usage: oUsage });
+            else hasError = true;
         } else {
             systems.push(cb.value);
         }
@@ -216,67 +222,49 @@ async function processNewAccount() {
     btn.disabled = true;
     btn.textContent = "Jira API 호출 중...";
 
-    const newAccountData = {
-        systems, 
-        ip: document.getElementById("newAccountIp").value,
-        user: userData
-    };
+    const newAccountData = { systems, ip: document.getElementById("newAccountIp").value, user: userData };
 
     try {
         const res = await new Promise((resolve, reject) => {
-            chrome.runtime.sendMessage({
-                action: "CREATE_NEW_ACCOUNT",
-                data: newAccountData
-            }, response => {
-                if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
-                else resolve(response);
+            chrome.runtime.sendMessage({ action: "CREATE_NEW_ACCOUNT", data: newAccountData }, response => {
+                if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message)); else resolve(response);
             });
         });
         if(res.error) throw new Error(res.error);
-        alert(`✅ 신규 계정 신청 완료 (${res.issueKey})\n엑셀 자동 첨부됨.`);
+        showJiraModal([{ success: true, key: res.issueKey }]);
     } catch(e) {
-        alert(`API 에러: ${e.message}`);
+        showJiraModal([{ success: false, msg: e.message }]);
     }
     
     btn.disabled = false;
     btn.textContent = "Jira 자동 생성 (엑셀 첨부)";
 }
 
-// 💡 이벤트 리스너 묶음 (전화번호 하이픈 & 체크박스 연동)
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. 전화번호 하이픈
     const phoneInput = document.getElementById('setPhone');
     if (phoneInput) {
         phoneInput.addEventListener('input', function (e) {
             let val = this.value.replace(/[^0-9]/g, '');
-            if (val.length < 4) {
-                this.value = val;
-            } else if (val.length < 10) {
-                this.value = val.substring(0, 3) + '-' + val.substring(3, 6) + '-' + val.substring(6);
-            } else {
-                this.value = val.substring(0, 3) + '-' + val.substring(3, 7) + '-' + val.substring(7);
-            }
+            if (val.length < 4) this.value = val;
+            else if (val.length < 10) this.value = val.substring(0, 3) + '-' + val.substring(3, 6) + '-' + val.substring(6);
+            else this.value = val.substring(0, 3) + '-' + val.substring(3, 7) + '-' + val.substring(7);
         });
     }
 
-    // 2. 기타 체크박스 활성화 시 숨김 메뉴 오픈
     const chkOther = document.getElementById('chkOther');
     if (chkOther) {
         chkOther.addEventListener('change', function() {
             const inputDiv = document.getElementById('otherSystemInputs');
-            if (this.checked) {
-                inputDiv.classList.remove('hidden');
-                document.getElementById('otherIp').focus();
-            } else {
-                inputDiv.classList.add('hidden');
-                document.getElementById('otherIp').value = '';
-                document.getElementById('otherPort').value = '';
-                document.getElementById('otherUsage').value = '';
-            }
+            if (this.checked) { inputDiv.classList.remove('hidden'); document.getElementById('otherIp').focus(); } 
+            else { inputDiv.classList.add('hidden'); document.getElementById('otherIp').value = ''; document.getElementById('otherPort').value = ''; document.getElementById('otherUsage').value = ''; }
         });
     }
     
-    // 3. 트리 체크박스 연동(모두 선택 / 하위 메뉴 연동)
+    // 아코디언 내부에 있는 그룹 체크박스 클릭 시 details가 여닫히는 것을 방지
+    document.querySelectorAll('summary .grp-cb').forEach(cb => {
+        cb.addEventListener('click', (e) => e.stopPropagation());
+    });
+
     const chkSelectAll = document.getElementById('chkSelectAll');
     const grpCbs = document.querySelectorAll('.grp-cb');
     const subCbs = document.querySelectorAll('.sub-cb');
@@ -322,7 +310,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const allSubCbs = Array.from(document.querySelectorAll('.sub-cb'));
         const allChecked = allSubCbs.every(c => c.checked);
         const someChecked = allSubCbs.some(c => c.checked);
-        
         chkSelectAll.checked = allChecked;
         chkSelectAll.indeterminate = !allChecked && someChecked;
     }
