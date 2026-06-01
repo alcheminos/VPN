@@ -42,7 +42,7 @@ function showView(viewId) {
 
 function openSettings() { 
     if(userData.name) document.getElementById('setName').value = userData.name;
-    if(userData.id) document.getElementById('setId').value = userData.id;
+    if(userData.id) document.getElementById('setId').value = userData.id.replace(/^skb/i, '');
     if(userData.dept) document.getElementById('setDept').value = userData.dept;
     if(userData.ip1) document.getElementById('setIp1').value = userData.ip1;
     if(userData.ip2) document.getElementById('setIp2').value = userData.ip2;
@@ -61,23 +61,26 @@ function switchTab(event, tabId) {
 function updateProfileUI() {
     document.getElementById('dispName').textContent = `${userData.name} (${userData.id})`;
     document.getElementById('dispDept').textContent = userData.dept;
-    let ipOptions = `<option value="${userData.ip1}">재택1: ${userData.ip1}</option>`;
-    if(userData.ip2) ipOptions += `<option value="${userData.ip2}">재택2: ${userData.ip2}</option>`;
+    let ipOptions = `<option value="${userData.ip1}">IP 주소 1: ${userData.ip1}</option>`;
+    if(userData.ip2) ipOptions += `<option value="${userData.ip2}">IP 주소 2: ${userData.ip2}</option>`;
     document.querySelectorAll('.ip-selector').forEach(s => s.innerHTML = ipOptions);
 }
 
 function saveSettings() {
+    // 💡 저장할 때는 입력된 숫자에 무조건 'skb'를 붙여서 저장
+    let rawId = document.getElementById('setId').value.trim().replace(/^skb/i, '');
+
     userData = {
         name: document.getElementById('setName').value.trim(),
-        id: document.getElementById('setId').value.trim(),
+        id: 'skb' + rawId, 
         jiraId: document.getElementById('setJiraId').value.trim(),
         dept: document.getElementById('setDept').value.trim(),
-        phone: document.getElementById('setPhone').value.trim(), // 👈 추가
+        phone: document.getElementById('setPhone').value.trim(), 
         ip1: document.getElementById('setIp1').value.trim(),
         ip2: document.getElementById('setIp2').value.trim()
     };
-    if(!userData.name || !userData.id || !userData.jiraId || !userData.phone || !userData.ip1) 
-        return alert("이름, 사번, Jira ID, 연락처, 재택1 IP 필수"); // 필수 검증 추가
+    if(!userData.name || !rawId || !userData.jiraId || !userData.phone || !userData.ip1) 
+        return alert("이름, 사번, Jira ID, 연락처, IP 주소 1은 필수입니다."); 
     
     chrome.storage.local.set({vpnUserData: userData}, () => {
         updateProfileUI();
@@ -153,17 +156,29 @@ async function processExtendVpn() {
 }
 
 async function processNewAccount() {
-    const systems = Array.from(document.querySelectorAll('input[name="targetSystem"]:checked')).map(cb => cb.value);
-    if (systems.length === 0) return alert("시스템 선택 필수");
+    // 💡 체크박스 중 '기타' 선택 시 직접 입력한 텍스트를 배열에 넣는 로직 추가
+    let hasError = false;
+    const systems = [];
+    document.querySelectorAll('input[name="targetSystem"]:checked').forEach(cb => {
+        if(cb.value === '기타') {
+            const otherVal = document.getElementById('otherSystemInput').value.trim();
+            if(otherVal) systems.push(otherVal);
+            else hasError = true;
+        } else {
+            systems.push(cb.value);
+        }
+    });
+
+    if (hasError) return alert("기타 시스템 이름을 직접 입력해주세요.");
+    if (systems.length === 0) return alert("대상 시스템을 1개 이상 선택해주세요.");
 
     const btn = document.getElementById("btnNewAccount");
     btn.disabled = true;
     btn.textContent = "Jira API 호출 중...";
 
     const newAccountData = {
-        systems,
+        systems, // 💡 직접 입력된 텍스트가 포함된 systems 배열 전달
         ip: document.getElementById("newAccountIp").value,
-        usagePeriod: document.getElementById("usagePeriod").value,
         user: userData
     };
 
@@ -204,6 +219,19 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // 10~11자리 정상 휴대폰 번호 (예: 010-1234-5678)
                 this.value = val.substring(0, 3) + '-' + val.substring(3, 7) + '-' + val.substring(7);
+            }
+        });
+    }
+    const chkOther = document.getElementById('chkOther');
+    if (chkOther) {
+        chkOther.addEventListener('change', function() {
+            const input = document.getElementById('otherSystemInput');
+            if (this.checked) {
+                input.classList.remove('hidden');
+                input.focus();
+            } else {
+                input.classList.add('hidden');
+                input.value = '';
             }
         });
     }
