@@ -235,11 +235,30 @@ ${user.id} / ${user.name} / ${user.dept} / ${userEmail}`;
     return { success: true, issueKey: issueKey };
 }
 
-// 👇 제가 실수로 누락했던 handleExtendVpn 함수입니다!
 async function handleExtendVpn(data) {
-    const { date, ip, reason, startTime, endTime, user } = data;
+    // 💡 단일 user가 아닌 배열 형태의 users와 mainUser를 받아옵니다
+    const { date, ip, reason, startTime, endTime, users, mainUser } = data;
     const [yyyy, mm, dd] = date.split('-'); 
     
+    // 💡 동적으로 인원수(users 배열 길이)만큼 표의 행(tr)을 생성합니다
+    let rowsHtml = '';
+    users.forEach((u, index) => {
+        rowsHtml += `
+        <tr>
+            <td style="padding: 5px;">${index + 1}</td>
+            <td style="padding: 5px;">${u.name}</td>
+            <td style="padding: 5px;">${u.dept}</td>
+            <td style="padding: 5px;">${u.name}</td>
+            <td style="padding: 5px;">${u.id}</td>
+            <td style="padding: 5px;">${yyyy}</td>
+            <td style="padding: 5px;">${mm}</td>
+            <td style="padding: 5px;">${dd}</td>
+            <td style="padding: 5px;">${startTime}</td>
+            <td style="padding: 5px;">${endTime}</td>
+            <td style="padding: 5px;">${reason}</td>
+        </tr>`;
+    });
+
     const tableDescription = `
 <p>반드시 아래 양식에 맞게 입력 부탁드립니다.<br>
 아래 양식 이외 신청 건은 반려처리됩니다.</p>
@@ -262,19 +281,7 @@ async function handleExtendVpn(data) {
             <td style="padding: 5px;">시작</td>
             <td style="padding: 5px;">종료</td>
         </tr>
-        <tr>
-            <td style="padding: 5px;">1</td>
-            <td style="padding: 5px;">${user.name}</td>
-            <td style="padding: 5px;">${user.dept}</td>
-            <td style="padding: 5px;">${user.name}</td>
-            <td style="padding: 5px;">${user.id}</td>
-            <td style="padding: 5px;">${yyyy}</td>
-            <td style="padding: 5px;">${mm}</td>
-            <td style="padding: 5px;">${dd}</td>
-            <td style="padding: 5px;">${startTime}</td>
-            <td style="padding: 5px;">${endTime}</td>
-            <td style="padding: 5px;">${reason}</td>
-        </tr>
+        ${rowsHtml}
     </tbody>
 </table>
 `;
@@ -282,11 +289,10 @@ async function handleExtendVpn(data) {
     const payload = {
         fields: {
             project: { key: PROJECT_KEY },
-            // 💡 4) 활성화 제목 변경: [활성화] 날짜 VPN 사용 요청
             summary: `[활성화] ${date} VPN 사용 요청`,
             description: tableDescription,
             issuetype: { name: "Task" }, 
-            reporter: { name: user.jiraId },
+            reporter: { name: mainUser.jiraId }, // 메인 유저 이름으로 리포터 설정
             assignee: { name: "hs3986" }
         }
     };
