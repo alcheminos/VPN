@@ -2,7 +2,7 @@ importScripts('xlsx.min.js');
 
 const JIRA_BASE_URL = "https://jira.skbroadband.com";
 const PROJECT_KEY = "BTVVPN"; 
-const TRANSITION_ID_RECEIPT = "4"; 
+const TRANSITION_ID_RECEIPT = "11"; 
 
 // 💡 STG 환경 접속지 제거 완료
 const SYSTEM_DESTINATIONS = {
