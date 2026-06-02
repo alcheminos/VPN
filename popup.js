@@ -17,10 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.getElementById('btnAddMember').addEventListener('click', addMember);
 
-        // 엔터 키로 멤버 추가 가능하도록
-        const idInput = document.getElementById('addMemberIp');
-        if (idInput) {
-            idInput.addEventListener('keypress', function(e) {
+        // 엔터 키로 멤버 빠른 추가
+        const ipInput = document.getElementById('addMemberIp');
+        if (ipInput) {
+            ipInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') { e.preventDefault(); addMember(); }
             });
         }
@@ -114,7 +114,6 @@ async function loadCurrentIpToInput(inputId, btnId) {
     setTimeout(() => { btn.textContent = "현재 위치 IP 입력"; btn.disabled = false; }, 2000);
 }
 
-// 💡 공통 모달 팝업 함수
 function showJiraModal(results) {
     const container = document.getElementById('jiraLinks');
     container.innerHTML = results.map(res => {
@@ -215,7 +214,7 @@ async function processNewAccount() {
         }
     });
 
-    if (hasError) return alert("기타 시스템의 IP, Port, 용도를 모두 입력해주세요.");
+    if (hasError) return alert("수동 추가 시스템의 IP, Port, 용도를 모두 입력해주세요.");
     if (systems.length === 0) return alert("대상 시스템을 1개 이상 선택해주세요.");
 
     const btn = document.getElementById("btnNewAccount");
@@ -241,6 +240,7 @@ async function processNewAccount() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // 전화번호 하이픈 자동 삽입
     const phoneInput = document.getElementById('setPhone');
     if (phoneInput) {
         phoneInput.addEventListener('input', function (e) {
@@ -251,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 수동 추가 입력란 토글
     const chkOther = document.getElementById('chkOther');
     if (chkOther) {
         chkOther.addEventListener('change', function() {
@@ -260,11 +261,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // 아코디언 내부에 있는 그룹 체크박스 클릭 시 details가 여닫히는 것을 방지
+    // 아코디언 타이틀 안의 체크박스 클릭 시 아코디언이 여닫히는 현상 방지
     document.querySelectorAll('summary .grp-cb').forEach(cb => {
         cb.addEventListener('click', (e) => e.stopPropagation());
     });
 
+    // 모두 선택 기능 (수동 추가 입력 제외 보장)
     const chkSelectAll = document.getElementById('chkSelectAll');
     const grpCbs = document.querySelectorAll('.grp-cb');
     const subCbs = document.querySelectorAll('.sub-cb');
@@ -277,6 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 그룹 체크박스 클릭 시 하위 항목 일괄 제어
     grpCbs.forEach(grp => {
         grp.addEventListener('change', function() {
             const isChecked = this.checked;
@@ -287,19 +290,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // 개별 체크박스 상태에 따라 그룹 체크박스 및 모두선택 상태 자동 계산
     subCbs.forEach(sub => {
         sub.addEventListener('change', function() {
             const classes = Array.from(this.classList);
             const groupClass = classes.find(c => c !== 'sub-cb' && document.querySelector(`.grp-cb[data-target="${c}"]`));
             
+            // 그룹이 있는 경우에만 상태 계산 (단일 체크박스 분리에 따른 에러 완벽 방지)
             if (groupClass) {
                 const parentGrp = document.querySelector(`.grp-cb[data-target="${groupClass}"]`);
-                const siblings = document.querySelectorAll(`.sub-cb.${groupClass}`);
-                const allChecked = Array.from(siblings).every(c => c.checked);
-                const someChecked = Array.from(siblings).some(c => c.checked);
-                
-                parentGrp.checked = allChecked;
-                parentGrp.indeterminate = !allChecked && someChecked; 
+                if(parentGrp) {
+                    const siblings = document.querySelectorAll(`.sub-cb.${groupClass}`);
+                    const allChecked = Array.from(siblings).every(c => c.checked);
+                    const someChecked = Array.from(siblings).some(c => c.checked);
+                    
+                    parentGrp.checked = allChecked;
+                    parentGrp.indeterminate = !allChecked && someChecked; 
+                }
             }
             updateSelectAllState();
         });
@@ -308,8 +315,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateSelectAllState() {
         if (!chkSelectAll) return;
         const allSubCbs = Array.from(document.querySelectorAll('.sub-cb'));
-        const allChecked = allSubCbs.every(c => c.checked);
+        const allChecked = allSubCbs.length > 0 && allSubCbs.every(c => c.checked);
         const someChecked = allSubCbs.some(c => c.checked);
+        
         chkSelectAll.checked = allChecked;
         chkSelectAll.indeterminate = !allChecked && someChecked;
     }
