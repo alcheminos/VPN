@@ -3,18 +3,33 @@
   "version": "1.0",
   "manifest_version": 3,
   "description": "VPN 계정 및 활성화 연장 자동 신청 툴",
+
+  // 💡 아이콘 이미지 파일명을 'icon.png'로 연결했습니다.
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  
+  "action": {
+    "default_popup": "popup.html",
+    // 💡 툴바(퍼즐 조각 옆) 아이콘도 연결했습니다.
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  },
+  
   "permissions": [
-    "storage"
-  ],
-  "host_permissions": [
-    "https://jira.skbroadband.com/*",
-    "https://api.ipify.org/*"
+    "storage",
+    "activeTab"
   ],
   "background": {
     "service_worker": "background.js"
   },
-  "action": {
-    "default_popup": "popup.html",
-    "default_title": "VPN Admin 열기"
-  }
+  "host_permissions": [
+    "https://jira.skbroadband.com/*",
+    "https://api.ipify.org/*"
+  ]
 }
