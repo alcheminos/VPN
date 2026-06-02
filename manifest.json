@@ -1,8 +1,8 @@
 {
-  "name": "VPN Request Admin (Jira Automation)",
+  "name": "VPN Tool",
   "version": "1.0",
   "manifest_version": 3,
-  "description": "B tv 큐레이션팀 VPN 계정 및 활성화 연장 자동 신청 툴",
+  "description": "VPN 계정 및 활성화 연장 자동 신청 툴",
   "permissions": [
     "storage"
   ],
