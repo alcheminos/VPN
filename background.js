@@ -4,12 +4,10 @@ const JIRA_BASE_URL = "https://jira.skbroadband.com";
 const PROJECT_KEY = "BTVVPN"; 
 const TRANSITION_ID_RECEIPT = "4"; 
 
-// 💡 3) 시스템 데이터 최신화 반영 (Pre 삭제, RACE/KES 정리)
+// 💡 STG 환경 접속지 제거 완료
 const SYSTEM_DESTINATIONS = {
     "EUXP 상용": { ip: "1.255.152.40", port: "TCP 8080, 8443", usage: "EUXP" },
-    "EUXP Stg": { ip: "1.255.86.188", port: "TCP 8443", usage: "EUXP" },
     "NCMS 상용": { ip: "1.255.152.19", port: "TCP 8001", usage: "NCMS" },
-    "NCMS Stg": { ip: "175.113.150.43", port: "TCP 8443", usage: "NCMS" },
     "ACS": { ip: "114.202.130.191\n114.202.130.40", port: "TCP 9093", usage: "ACS" },
     "통합ES": { ip: "1.255.140.10", port: "TCP 5601", usage: "KIBANA" },
     "수유 빌드 키바나": { ip: "1.255.152.46", port: "TCP 5601", usage: "KIBANA" },
