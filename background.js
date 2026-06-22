@@ -7,7 +7,7 @@ const TRANSITION_ID_RECEIPT = "11";
 // 💡 STG 환경 접속지 제거 완료
 const SYSTEM_DESTINATIONS = {
     "EUXP 상용": { ip: "1.255.152.40", port: "TCP 8080, 8443", usage: "EUXP" },
-    "NCMS 상용": { ip: "1.255.152.19", port: "TCP 8001", usage: "NCMS" },
+    "NCMS 상용": { ip: "121.125.60.32", port: "TCP 8443", usage: "NCMS" },
     "ACS": { ip: "114.202.130.191\n114.202.130.40", port: "TCP 9093", usage: "ACS" },
     "통합ES": { ip: "1.255.140.10", port: "TCP 5601", usage: "KIBANA" },
     "수유 빌드 키바나": { ip: "1.255.152.46", port: "TCP 5601", usage: "KIBANA" },
