@@ -20,7 +20,9 @@ const SYSTEM_DESTINATIONS = {
     "RACE Admin": { ip: "1.255.152.46", port: "TCP 5630", usage: "RACE" },
     "KES Admin": { ip: "114.202.130.168", port: "TCP 9090", usage: "KES" },
     "ECDN": { ip: "121.125.63.21", port: "TCP 80", usage: "ETC" },
-    "상용DB": { ip: "114.202.130.168", port: "TCP 9090", usage: "ETC" }
+    "상용DB": { ip: "114.202.130.168", port: "TCP 9090", usage: "ETC" },
+    "Adslot": { ip: "1.255.119.19", port: "TCP 8080", usage: "ETC" },
+    "ECDN서버": { ip: "1.255.146.29", port: "TCP 443", usage: "ETC" }
 };
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
